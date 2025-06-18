@@ -1,0 +1,277 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Portfolio
+  portfolio Portfolio?
+  
+  // Trading history
+  trades Trade[]
+  
+  // Backtest results
+  backtestResults BacktestResult[]
+}
+
+model Portfolio {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Portfolio data
+  initialBalance Float   @default(10000) // Starting with $10,000 demo money
+  currentBalance Float   @default(10000)
+  totalValue     Float   @default(10000)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Holdings
+  holdings Holding[]
+}
+
+model Holding {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  symbol      String
+  shares      Float
+  avgPrice    Float     // Average purchase price
+  currentPrice Float    @default(0)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([portfolioId, symbol])
+}
+
+model Trade {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  symbol    String
+  type      TradeType
+  shares    Float
+  price     Float
+  total     Float    // shares * price
+  
+  createdAt DateTime @default(now())
+}
+
+// Market Data Tables for Advanced Analytics
+model MarketData {
+  id          String   @id @default(cuid())
+  symbol      String
+  timestamp   DateTime
+  open        Float
+  high        Float
+  low         Float
+  close       Float
+  volume      BigInt
+  adjustedClose Float?
+  source      DataSource @default(TIINGO)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([symbol, timestamp, source])
+  @@index([symbol, timestamp])
+}
+
+model MarketIndex {
+  id          String   @id @default(cuid())
+  symbol      String   @unique // SPY, QQQ, DIA, etc.
+  name        String   // S&P 500, NASDAQ, Dow Jones
+  description String?
+  category    IndexCategory
+  constituents String? // JSON string of stock symbols
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Historical index data
+  indexData   IndexData[]
+}
+
+model IndexData {
+  id          String     @id @default(cuid())
+  indexId     String
+  index       MarketIndex @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  
+  timestamp   DateTime
+  value       Float
+  change      Float
+  changePercent Float
+  volume      BigInt?
+  
+  @@unique([indexId, timestamp])
+  @@index([indexId, timestamp])
+}
+
+model TechnicalIndicator {
+  id        String   @id @default(cuid())
+  symbol    String
+  timestamp DateTime
+  
+  // Technical Indicators
+  rsi       Float?   // Relative Strength Index
+  macd      Float?   // MACD Line
+  macdSignal Float?  // MACD Signal Line
+  macdHist  Float?   // MACD Histogram
+  bollUpper Float?   // Bollinger Upper Band
+  bollMiddle Float?  // Bollinger Middle Band (SMA)
+  bollLower Float?   // Bollinger Lower Band
+  sma20     Float?   // 20-day Simple Moving Average
+  sma50     Float?   // 50-day Simple Moving Average
+  sma200    Float?   // 200-day Simple Moving Average
+  ema12     Float?   // 12-day Exponential Moving Average
+  ema26     Float?   // 26-day Exponential Moving Average
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([symbol, timestamp])
+  @@index([symbol, timestamp])
+}
+
+model Prediction {
+  id          String        @id @default(cuid())
+  symbol      String
+  model       PredictionModel
+  timeframe   String        // "1d", "7d", "30d", etc.
+  
+  // Prediction data
+  currentPrice    Float
+  predictedPrice  Float
+  confidence      Float     // Confidence level (0-1)
+  
+  // Prediction metadata
+  createdAt       DateTime  @default(now())
+  targetDate      DateTime  // When prediction is for
+  accuracy        Float?    // Actual accuracy after target date
+  
+  // Model parameters (JSON)
+  parameters      Json?
+  
+  @@index([symbol, createdAt])
+}
+
+model SentimentData {
+  id        String   @id @default(cuid())
+  symbol    String?  // Can be null for general market sentiment
+  timestamp DateTime
+  
+  sentiment Float    // -1 to 1 scale
+  source    SentimentSource
+  headline  String?
+  content   String?
+  url       String?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([symbol, timestamp])
+  @@index([timestamp])
+}
+
+model EconomicIndicator {
+  id        String   @id @default(cuid())
+  indicator String   // GDP, inflation, unemployment, etc.
+  timestamp DateTime
+  value     Float
+  unit      String?  // %, billions, etc.
+  source    String
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([indicator, timestamp])
+  @@index([indicator, timestamp])
+}
+
+model CorrelationAnalysis {
+  id          String   @id @default(cuid())
+  symbol1     String
+  symbol2     String
+  timeframe   String   // "30d", "90d", "1y"
+  correlation Float    // -1 to 1
+  
+  calculatedAt DateTime @default(now())
+  
+  @@unique([symbol1, symbol2, timeframe])
+}
+
+model BacktestResult {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  strategy    String   // Strategy name/description
+  symbol      String
+  startDate   DateTime
+  endDate     DateTime
+  
+  // Performance metrics
+  totalReturn     Float
+  annualizedReturn Float
+  sharpeRatio     Float
+  maxDrawdown     Float
+  winRate         Float
+  totalTrades     Int
+  
+  // Configuration
+  parameters      Json
+  
+  createdAt       DateTime @default(now())
+}
+
+enum TradeType {
+  BUY
+  SELL
+}
+
+enum DataSource {
+  TIINGO
+  ALPHA_VANTAGE
+  YAHOO_FINANCE
+  DUMMY
+}
+
+enum IndexCategory {
+  LARGE_CAP
+  MID_CAP
+  SMALL_CAP
+  SECTOR
+  INTERNATIONAL
+  COMMODITY
+  BOND
+}
+
+enum PredictionModel {
+  LINEAR_REGRESSION
+  ARIMA
+  SENTIMENT_BASED
+  TECHNICAL_ANALYSIS
+  ENSEMBLE
+}
+
+enum SentimentSource {
+  NEWS_API
+  TWITTER
+  REDDIT
+  FINANCIAL_NEWS
+  MANUAL
+}

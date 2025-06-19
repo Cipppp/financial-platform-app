@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { dynamoDBService } from '@/lib/dynamodb-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,9 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+    const existingUser = await dynamoDBService.getUserByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -31,22 +27,18 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: name || email.split('@')[0],
-      }
+    const user = await dynamoDBService.createUser({
+      email,
+      password: hashedPassword,
+      name: name || email.split('@')[0],
     })
 
     // Create initial portfolio with $10,000 demo money
-    await prisma.portfolio.create({
-      data: {
-        userId: user.id,
-        initialBalance: 10000,
-        currentBalance: 10000,
-        totalValue: 10000,
-      }
+    await dynamoDBService.createPortfolio({
+      userId: user.id,
+      initialBalance: 10000,
+      currentBalance: 10000,
+      totalValue: 10000,
     })
 
     return NextResponse.json({

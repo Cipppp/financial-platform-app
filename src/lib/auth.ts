@@ -1,9 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { dynamoDBService } from './dynamodb-client'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -18,11 +16,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
-        })
+        const user = await dynamoDBService.getUserByEmail(credentials.email)
 
         if (!user) {
           return null

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateDummyStockData } from '@/lib/dummyData'
 
 const TIINGO_API_KEY = process.env.TIINGO_API_KEY
 const TIINGO_BASE_URL = 'https://api.tiingo.com/tiingo'
@@ -118,43 +117,30 @@ export async function GET(request: NextRequest) {
     const endIndex = startIndex + limit
     const paginatedStocks = filteredStocks.slice(startIndex, endIndex)
 
-    // Get stock data
+    // Get stock data from Tiingo API
     const stocksData = []
     
-    const isDummyEnabled = process.env.USE_DUMMY_DATA === 'true'
-    console.log('Environment check:', { 
-      USE_DUMMY_DATA: process.env.USE_DUMMY_DATA, 
-      isDummyEnabled,
-      paginatedStocksLength: paginatedStocks.length 
-    })
+    console.log(`Fetching real data for ${paginatedStocks.length} stocks (page ${page})`)
     
-    if (isDummyEnabled) {
-      console.log(`🎭 Using dummy data for ${paginatedStocks.length} stocks (page ${page})`)
-      for (const stockConfig of paginatedStocks) {
-        const stockData = generateDummyStockData(stockConfig.symbol)
-        const companyNames: Record<string, string> = {
-          'AAPL': 'Apple Inc.',
-          'GOOGL': 'Alphabet Inc.',
-          'MSFT': 'Microsoft Corporation',
-          'AMZN': 'Amazon.com Inc.',
-          'META': 'Meta Platforms Inc.',
-          'NVDA': 'NVIDIA Corporation',
-          'TSLA': 'Tesla Inc.',
-          'NFLX': 'Netflix Inc.',
-          'PLTR': 'Palantir Technologies Inc.',
-          'F': 'Ford Motor Company',
-          'GM': 'General Motors Company',
-          'DIS': 'The Walt Disney Company',
-          'BABA': 'Alibaba Group Holding Limited',
-          'NKLA': 'Nikola Corporation'
-        }
-        stocksData.push({
-          ...stockData,
-          name: companyNames[stockConfig.symbol] || `${stockConfig.symbol} Corp.`,
-          category: stockConfig.category
-        })
-      }
-    } else {
+    // Company names mapping
+    const companyNames: Record<string, string> = {
+      'AAPL': 'Apple Inc.',
+      'GOOGL': 'Alphabet Inc.',
+      'MSFT': 'Microsoft Corporation',
+      'AMZN': 'Amazon.com Inc.',
+      'META': 'Meta Platforms Inc.',
+      'NVDA': 'NVIDIA Corporation',
+      'TSLA': 'Tesla Inc.',
+      'NFLX': 'Netflix Inc.',
+      'PLTR': 'Palantir Technologies Inc.',
+      'F': 'Ford Motor Company',
+      'GM': 'General Motors Company',
+      'DIS': 'The Walt Disney Company',
+      'BABA': 'Alibaba Group Holding Limited',
+      'NKLA': 'Nikola Corporation'
+    }
+    
+    {
       // Parallel API calls with timeout for better performance
       const fetchPromises = paginatedStocks.map(async (stockConfig) => {
         try {
@@ -264,34 +250,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Fallback: if no stocks data was generated, create some dummy data
-    if (stocksData.length === 0 && paginatedStocks.length > 0) {
-      console.log('🔧 Fallback: generating dummy data for', paginatedStocks.length, 'stocks')
-      for (const stockConfig of paginatedStocks) {
-        const stockData = generateDummyStockData(stockConfig.symbol)
-        const companyNames: Record<string, string> = {
-          'AAPL': 'Apple Inc.',
-          'GOOGL': 'Alphabet Inc.',
-          'MSFT': 'Microsoft Corporation',
-          'AMZN': 'Amazon.com Inc.',
-          'META': 'Meta Platforms Inc.',
-          'NVDA': 'NVIDIA Corporation',
-          'TSLA': 'Tesla Inc.',
-          'NFLX': 'Netflix Inc.',
-          'PLTR': 'Palantir Technologies Inc.',
-          'F': 'Ford Motor Company',
-          'GM': 'General Motors Company',
-          'DIS': 'The Walt Disney Company',
-          'BABA': 'Alibaba Group Holding Limited',
-          'NKLA': 'Nikola Corporation'
-        }
-        stocksData.push({
-          ...stockData,
-          name: companyNames[stockConfig.symbol] || `${stockConfig.symbol} Corp.`,
-          category: stockConfig.category
-        })
-      }
-    }
+    // Log final results
+    console.log(`✅ Successfully fetched ${stocksData.length} out of ${paginatedStocks.length} requested stocks`)
 
     console.log(`✅ Returning ${stocksData.length} stocks`)
 

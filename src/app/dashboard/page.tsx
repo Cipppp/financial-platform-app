@@ -117,7 +117,6 @@ export default function DashboardPage() {
         <p className="text-sm lg:text-base font-bold text-black dark:text-white mt-2">Welcome back, {session.user?.name || session.user?.email}!</p>
         <p className="text-xs lg:text-sm font-semibold text-black dark:text-white">
           Track your demo trading portfolio
-          {process.env.NEXT_PUBLIC_USE_DUMMY_DATA === 'true' && ' • Using demo data'}
         </p>
       </div>
       

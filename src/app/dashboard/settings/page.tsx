@@ -38,7 +38,7 @@ export default function SettingsPage() {
     tradeConfirmations: true,
     marketAlerts: false,
     weeklyReports: true,
-    dataSource: process.env.NEXT_PUBLIC_USE_DUMMY_DATA === 'true' ? 'dummy' : 'live',
+    dataSource: 'live',
     currency: 'USD',
     timezone: 'America/New_York'
   })

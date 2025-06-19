@@ -67,7 +67,7 @@ model Trade {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   symbol    String
-  type      TradeType
+  type      String // BUY, SELL
   shares    Float
   price     Float
   total     Float    // shares * price
@@ -86,7 +86,7 @@ model MarketData {
   close       Float
   volume      BigInt
   adjustedClose Float?
-  source      DataSource @default(TIINGO)
+  source      String @default("TIINGO") // TIINGO, ALPHA_VANTAGE, YAHOO_FINANCE, DUMMY
   
   createdAt   DateTime @default(now())
   
@@ -99,7 +99,7 @@ model MarketIndex {
   symbol      String   @unique // SPY, QQQ, DIA, etc.
   name        String   // S&P 500, NASDAQ, Dow Jones
   description String?
-  category    IndexCategory
+  category    String // LARGE_CAP, MID_CAP, SMALL_CAP, SECTOR, INTERNATIONAL, COMMODITY, BOND
   constituents String? // JSON string of stock symbols
   
   createdAt   DateTime @default(now())
@@ -152,7 +152,7 @@ model TechnicalIndicator {
 model Prediction {
   id          String        @id @default(cuid())
   symbol      String
-  model       PredictionModel
+  model       String // LINEAR_REGRESSION, ARIMA, SENTIMENT_BASED, TECHNICAL_ANALYSIS, ENSEMBLE
   timeframe   String        // "1d", "7d", "30d", etc.
   
   // Prediction data
@@ -165,8 +165,8 @@ model Prediction {
   targetDate      DateTime  // When prediction is for
   accuracy        Float?    // Actual accuracy after target date
   
-  // Model parameters (JSON)
-  parameters      Json?
+  // Model parameters (JSON as string)
+  parameters      String?
   
   @@index([symbol, createdAt])
 }
@@ -177,7 +177,7 @@ model SentimentData {
   timestamp DateTime
   
   sentiment Float    // -1 to 1 scale
-  source    SentimentSource
+  source    String // NEWS_API, TWITTER, REDDIT, FINANCIAL_NEWS, MANUAL
   headline  String?
   content   String?
   url       String?
@@ -232,46 +232,15 @@ model BacktestResult {
   winRate         Float
   totalTrades     Int
   
-  // Configuration
-  parameters      Json
+  // Configuration (JSON as string)
+  parameters      String
   
   createdAt       DateTime @default(now())
 }
 
-enum TradeType {
-  BUY
-  SELL
-}
-
-enum DataSource {
-  TIINGO
-  ALPHA_VANTAGE
-  YAHOO_FINANCE
-  DUMMY
-}
-
-enum IndexCategory {
-  LARGE_CAP
-  MID_CAP
-  SMALL_CAP
-  SECTOR
-  INTERNATIONAL
-  COMMODITY
-  BOND
-}
-
-enum PredictionModel {
-  LINEAR_REGRESSION
-  ARIMA
-  SENTIMENT_BASED
-  TECHNICAL_ANALYSIS
-  ENSEMBLE
-}
-
-enum SentimentSource {
-  NEWS_API
-  TWITTER
-  REDDIT
-  FINANCIAL_NEWS
-  MANUAL
-}
+// Enums converted to String fields with comments for SQLite compatibility
+// TradeType: BUY, SELL
+// DataSource: TIINGO, ALPHA_VANTAGE, YAHOO_FINANCE, DUMMY  
+// IndexCategory: LARGE_CAP, MID_CAP, SMALL_CAP, SECTOR, INTERNATIONAL, COMMODITY, BOND
+// PredictionModel: LINEAR_REGRESSION, ARIMA, SENTIMENT_BASED, TECHNICAL_ANALYSIS, ENSEMBLE
+// SentimentSource: NEWS_API, TWITTER, REDDIT, FINANCIAL_NEWS, MANUAL

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { dynamoDBService } from '@/lib/dynamodb-client'
-import { generateDummyStockData, isDummyDataEnabled } from '@/lib/dummyData'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,21 +34,15 @@ export async function GET(request: NextRequest) {
       try {
         let currentPrice = holding.currentPrice
 
-        if (isDummyDataEnabled()) {
-          // Use dummy data for price
-          const dummyData = generateDummyStockData(holding.symbol)
-          currentPrice = dummyData.price
-        } else {
-          // Fetch current price from Tiingo API
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/tiingo/${holding.symbol}`,
-            { cache: 'no-cache' }
-          )
-          
-          if (response.ok) {
-            const stockData = await response.json()
-            currentPrice = stockData.price
-          }
+        // Fetch current price from Tiingo API
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/tiingo/${holding.symbol}`,
+          { cache: 'no-cache' }
+        )
+        
+        if (response.ok) {
+          const stockData = await response.json()
+          currentPrice = stockData.price
         }
 
         const currentValue = holding.shares * currentPrice

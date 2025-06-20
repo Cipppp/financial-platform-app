@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getTopGainersLosers, isDummyDataEnabled, getAllStockSymbols } from '@/lib/dummyData'
 
 const TIINGO_API_KEY = process.env.TIINGO_API_KEY
 const TIINGO_BASE_URL = 'https://api.tiingo.com/tiingo'
@@ -9,12 +8,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    if (isDummyDataEnabled()) {
-      console.log('🎭 Using dummy market data for gainers/losers')
-      const result = getTopGainersLosers(limit)
-      return NextResponse.json(result)
-    }
-
     // Real API implementation for Tiingo
     if (!TIINGO_API_KEY) {
       return NextResponse.json(
@@ -23,10 +16,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // For real implementation, we'd need to fetch data for multiple stocks
-    // Tiingo doesn't have a direct "top gainers/losers" endpoint, so we simulate it
-    // by fetching data for our stock universe
-    const symbols = getAllStockSymbols().slice(0, 50) // Limit to prevent API quota issues
+    // Popular stock symbols to check for gainers/losers
+    const symbols = [
+      'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'META', 'NVDA', 'TSLA', 'NFLX', 
+      'AMD', 'INTC', 'ORCL', 'ADBE', 'CRM', 'PYPL', 'COIN', 'PLTR',
+      'F', 'GM', 'DIS', 'BABA', 'NKLA', 'SPCE', 'SHOP', 'SQ'
+    ].slice(0, Math.min(30, limit * 3)) // Limit to prevent API quota issues
     const stockPromises = symbols.map(async (symbol) => {
       try {
         const response = await fetch(

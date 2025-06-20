@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TiingoQuote, StockData } from '@/lib/types'
-import { generateDummyStockData, isDummyDataEnabled } from '@/lib/dummyData'
 
 const TIINGO_API_KEY = process.env.TIINGO_API_KEY
 const TIINGO_BASE_URL = 'https://api.tiingo.com/tiingo'
@@ -12,13 +11,6 @@ export async function GET(
   try {
     const { symbol } = await params
     const symbolUpper = symbol.toUpperCase()
-    
-    // Check if dummy data is enabled
-    if (isDummyDataEnabled()) {
-      console.log(`🎭 Using dummy data for ${symbolUpper}`)
-      const dummyData = generateDummyStockData(symbolUpper)
-      return NextResponse.json(dummyData)
-    }
     
     if (!TIINGO_API_KEY) {
       return NextResponse.json(

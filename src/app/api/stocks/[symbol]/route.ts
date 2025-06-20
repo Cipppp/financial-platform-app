@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateDummyStockData, isDummyDataEnabled } from '@/lib/dummyData'
 import { DynamoDBCache } from '@/lib/dynamodb'
 
 export async function GET(
@@ -10,16 +9,9 @@ export async function GET(
     const { symbol } = await params
     const symbolUpper = symbol.toUpperCase()
     
-    // Get data source from environment variable
-    const dataSource = process.env.STOCK_DATA_SOURCE || 'dummy'
+    // Use Tiingo as data source
+    const dataSource = 'tiingo'
     
-    // Always check dummy data flag first
-    if (isDummyDataEnabled() || dataSource === 'dummy') {
-      console.log(`🎭 Using dummy data for ${symbolUpper}`)
-      const dummyData = generateDummyStockData(symbolUpper)
-      return NextResponse.json(dummyData)
-    }
-
     // Check cache first
     const cacheKey = DynamoDBCache.generateKey(symbolUpper, dataSource)
     const cachedData = await DynamoDBCache.get(cacheKey)
@@ -50,9 +42,10 @@ export async function GET(
         apiEndpoint = `/api/stocks/polygon/${symbolUpper}`
         break
       default:
-        console.warn(`Unknown data source: ${dataSource}, falling back to dummy data`)
-        const dummyData = generateDummyStockData(symbolUpper)
-        return NextResponse.json(dummyData)
+        return NextResponse.json(
+          { error: `Unknown data source: ${dataSource}` },
+          { status: 400 }
+        )
     }
     
     // Fetch from the selected data source
@@ -72,11 +65,13 @@ export async function GET(
     
     const data = await response.json()
     
-    // If the API returned an error, fall back to dummy data
+    // If the API returned an error, return error response
     if (data.error) {
-      console.warn(`${dataSource} API returned error: ${data.error}, falling back to dummy data`)
-      const dummyData = generateDummyStockData(symbolUpper)
-      return NextResponse.json(dummyData)
+      console.warn(`${dataSource} API returned error: ${data.error}`)
+      return NextResponse.json(
+        { error: `Failed to fetch data from ${dataSource}: ${data.error}` },
+        { status: 500 }
+      )
     }
     
     // Cache the successful response
@@ -88,10 +83,8 @@ export async function GET(
   } catch (error) {
     console.error(`Universal Stock API Error:`, error)
     
-    // Fallback to dummy data on any error
-    const dummyData = generateDummyStockData(symbol)
     return NextResponse.json({
-      ...dummyData,
+      error: 'Failed to fetch stock data',
       _fallback: true,
       _originalError: error.message
     })

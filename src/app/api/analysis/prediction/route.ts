@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generatePrediction, PredictionInput } from '@/lib/predictionModels'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
+import { PredictionRepository } from '@/lib/dynamodb/repositories/PredictionRepository'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
 
-const prisma = new PrismaClient()
+const predictionRepo = new PredictionRepository()
+const userRepo = new UserRepository()
 
 async function fetchHistoricalData(symbol: string, days: number = 90) {
   const tiingoToken = process.env.TIINGO_API_KEY
@@ -139,25 +141,21 @@ export async function POST(request: NextRequest) {
     const prediction = generatePrediction(predictionInput, model as any, daysAhead)
     
     // Save prediction to database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
+    const user = await userRepo.findByEmail(session.user.email)
     
     if (user) {
       const targetDate = new Date()
       targetDate.setDate(targetDate.getDate() + daysAhead)
       
-      await prisma.prediction.create({
-        data: {
-          symbol,
-          model: model.toUpperCase() as any,
-          timeframe,
-          currentPrice: historicalData.prices[historicalData.prices.length - 1],
-          predictedPrice: prediction.predictedPrice,
-          confidence: prediction.confidence,
-          targetDate,
-          parameters: prediction.parameters as any
-        }
+      await predictionRepo.create({
+        symbol,
+        model: model.toUpperCase() as any,
+        timeframe,
+        currentPrice: historicalData.prices[historicalData.prices.length - 1],
+        predictedPrice: prediction.predictedPrice,
+        confidence: prediction.confidence,
+        targetDate: targetDate.toISOString(),
+        parameters: prediction.parameters
       })
     }
     
@@ -229,17 +227,15 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     
     // Get recent predictions
-    const predictions = await prisma.prediction.findMany({
-      where: symbol ? { symbol } : {},
-      orderBy: { createdAt: 'desc' },
-      take: limit
-    })
+    const predictions = symbol 
+      ? await predictionRepo.findBySymbol(symbol, limit)
+      : await predictionRepo.findRecent(limit)
     
     // Calculate accuracy for predictions that have passed their target date
     const now = new Date()
     const predictionsWithAccuracy = await Promise.all(
       predictions.map(async (pred) => {
-        if (pred.targetDate <= now && !pred.accuracy) {
+        if (new Date(pred.targetDate) <= now && !pred.accuracy) {
           // Fetch actual price for accuracy calculation
           try {
             const actualData = await fetchHistoricalData(pred.symbol, 1)
@@ -247,10 +243,7 @@ export async function GET(request: NextRequest) {
             const accuracy = 1 - Math.abs(pred.predictedPrice - actualPrice) / actualPrice
             
             // Update prediction with accuracy
-            await prisma.prediction.update({
-              where: { id: pred.id },
-              data: { accuracy }
-            })
+            await predictionRepo.updateAccuracy(pred.id, accuracy)
             
             return { ...pred, accuracy, actualPrice }
           } catch (error) {

@@ -1,8 +1,8 @@
 // src/app/api/analysis/sentiment/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { SentimentRepository } from '@/lib/dynamodb/repositories/SentimentRepository'
 
-const prisma = new PrismaClient()
+const sentimentRepo = new SentimentRepository()
 
 // Mock news headlines for demonstration
 const MOCK_NEWS_HEADLINES = [
@@ -241,14 +241,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Save sentiment data to database
-    const sentimentRecord = await prisma.sentimentData.create({
-      data: {
-        headline,
-        sentiment: parseFloat(sentiment),
-        source: source || 'MANUAL',
-        symbol: symbol || null,
-        timestamp: new Date()
-      }
+    const sentimentRecord = await sentimentRepo.create({
+      headline,
+      sentiment: parseFloat(sentiment),
+      source: source || 'MANUAL',
+      symbol: symbol || null,
+      timestamp: new Date().toISOString()
     })
     
     return NextResponse.json({

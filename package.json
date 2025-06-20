@@ -12,7 +12,6 @@
     "@aws-sdk/client-dynamodb": "^3.830.0",
     "@aws-sdk/lib-dynamodb": "^3.830.0",
     "@headlessui/react": "^2.2.4",
-    "@prisma/client": "^5.20.0",
     "@tanstack/react-query": "^5.80.5",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
@@ -37,7 +36,6 @@
     "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
-    "prisma": "^5.20.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

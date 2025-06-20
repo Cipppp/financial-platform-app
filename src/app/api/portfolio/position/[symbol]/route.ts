@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
 
-const prisma = new PrismaClient()
+const portfolioRepo = new PortfolioRepository()
 
 export async function GET(
   request: NextRequest,
@@ -19,21 +19,14 @@ export async function GET(
     const symbolUpper = symbol.toUpperCase()
     
     // Get user's portfolio
-    const portfolio = await prisma.portfolio.findUnique({
-      where: { userId: session.user.id },
-      include: {
-        holdings: {
-          where: { symbol: symbolUpper }
-        }
-      }
-    })
+    const portfolio = await portfolioRepo.findByUserId(session.user.id)
 
     if (!portfolio) {
       return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
     }
 
     // Find the specific holding for this symbol
-    const holding = portfolio.holdings.find(h => h.symbol === symbolUpper)
+    const holding = await portfolioRepo.getHolding(portfolio.id, symbolUpper)
 
     if (!holding) {
       // User doesn't own any shares of this stock

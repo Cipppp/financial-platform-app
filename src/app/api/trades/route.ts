@@ -2,9 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
 
-const prisma = new PrismaClient()
+const portfolioRepo = new PortfolioRepository()
+const userRepo = new UserRepository()
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,20 +20,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
 
     // Find the user
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
+    const user = await userRepo.findByEmail(session.user.email)
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     // Get trades for this user
-    const trades = await prisma.trade.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: limit
-    })
+    const trades = await portfolioRepo.getTradeHistory(user.id, limit)
 
     return NextResponse.json({ trades })
 

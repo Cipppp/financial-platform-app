@@ -1,8 +1,5 @@
 // src/app/api/market/indices/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 // Major market indices with their symbols and metadata
 const MARKET_INDICES = [

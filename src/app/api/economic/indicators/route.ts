@@ -1,8 +1,8 @@
 // src/app/api/economic/indicators/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { EconomicIndicatorRepository } from '@/lib/dynamodb/repositories/EconomicIndicatorRepository'
 
-const prisma = new PrismaClient()
+const economicRepo = new EconomicIndicatorRepository()
 
 // Mock economic indicators data
 const ECONOMIC_INDICATORS = [
@@ -230,13 +230,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Save economic indicator data to database
-    const indicatorRecord = await prisma.economicIndicator.create({
-      data: {
-        indicator,
-        value: parseFloat(value),
-        timestamp: timestamp ? new Date(timestamp) : new Date(),
-        source: source || 'Manual Entry'
-      }
+    const indicatorRecord = await economicRepo.create({
+      indicator,
+      value: parseFloat(value),
+      timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
+      source: source || 'Manual Entry'
     })
     
     return NextResponse.json({

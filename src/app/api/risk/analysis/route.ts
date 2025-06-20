@@ -2,10 +2,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
 import { calculateVolatility } from '@/lib/technicalIndicators'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
 
-const prisma = new PrismaClient()
+const userRepo = new UserRepository()
+const portfolioRepo = new PortfolioRepository()
 
 interface RiskMetrics {
   portfolioValue: number
@@ -167,18 +169,15 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol')
     
     // Get user's portfolio
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        portfolio: {
-          include: {
-            holdings: true
-          }
-        }
-      }
-    })
+    const user = await userRepo.findByEmail(session.user.email)
     
-    if (!user || !user.portfolio) {
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    
+    const portfolio = await portfolioRepo.findByUserId(user.id)
+    
+    if (!portfolio) {
       return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
     }
     
@@ -201,8 +200,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(riskMetrics)
     } else {
       // Portfolio-level risk analysis
-      const holdings = user.portfolio.holdings
-      const portfolioValue = user.portfolio.totalValue
+      const holdings = await portfolioRepo.getHoldings(portfolio.id)
+      const portfolioValue = portfolio.totalValue
       
       if (holdings.length === 0) {
         return NextResponse.json({
@@ -220,7 +219,7 @@ export async function GET(request: NextRequest) {
       )
       
       // Calculate portfolio returns (weighted average)
-      const weights = holdings.map(holding => holding.currentValue / portfolioValue)
+      const weights = holdings.map(holding => (holding.shares * holding.currentPrice) / portfolioValue)
       
       for (let i = 0; i < 252; i++) {
         let portfolioReturn = 0

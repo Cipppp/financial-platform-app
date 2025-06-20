@@ -52,7 +52,7 @@ export class UserRepository {
   async findByEmail(email: string): Promise<User | null> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.USERS,
-      IndexName: 'EmailIndex',
+      IndexName: 'email-index',
       KeyConditionExpression: 'email = :email',
       ExpressionAttributeValues: {
         ':email': email.toLowerCase()

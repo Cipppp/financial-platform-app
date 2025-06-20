@@ -2,9 +2,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { dynamoDBService } from '@/lib/dynamodb-client'
 
 export async function POST() {
   try {
@@ -15,38 +13,14 @@ export async function POST() {
     }
 
     // Find the user
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { portfolio: true }
-    })
+    const user = await dynamoDBService.getUserByEmail(session.user.email)
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (!user.portfolio) {
-      return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
-    }
-
-    // Delete all trades for this user
-    await prisma.trade.deleteMany({
-      where: { userId: user.id }
-    })
-
-    // Delete all holdings for this user's portfolio
-    await prisma.holding.deleteMany({
-      where: { portfolioId: user.portfolio.id }
-    })
-
-    // Reset portfolio balance to $10,000
-    await prisma.portfolio.update({
-      where: { userId: user.id },
-      data: {
-        currentBalance: 10000,
-        initialBalance: 10000,
-        totalValue: 10000
-      }
-    })
+    // Reset user portfolio (handles all cleanup and reset)
+    await dynamoDBService.resetUserPortfolio(user.id)
 
     return NextResponse.json({ 
       message: 'Portfolio reset successfully',

@@ -1,9 +1,9 @@
 // src/app/api/analysis/correlation/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { calculateCorrelation } from '@/lib/technicalIndicators'
-import { PrismaClient } from '@prisma/client'
+import { CorrelationRepository } from '@/lib/dynamodb/repositories/CorrelationRepository'
 
-const prisma = new PrismaClient()
+const correlationRepo = new CorrelationRepository()
 
 async function fetchPriceData(symbol: string, days: number = 90) {
   const tiingoToken = process.env.TIINGO_API_KEY
@@ -156,24 +156,11 @@ export async function GET(request: NextRequest) {
       
       // Save to database
       try {
-        await prisma.correlationAnalysis.upsert({
-          where: {
-            symbol1_symbol2_timeframe: {
-              symbol1,
-              symbol2,
-              timeframe
-            }
-          },
-          update: {
-            correlation: parseFloat(correlation.toFixed(3)),
-            calculatedAt: new Date()
-          },
-          create: {
-            symbol1,
-            symbol2,
-            timeframe,
-            correlation: parseFloat(correlation.toFixed(3))
-          }
+        await correlationRepo.upsert({
+          symbol1,
+          symbol2,
+          timeframe,
+          correlation: parseFloat(correlation.toFixed(3))
         })
       } catch (error) {
         console.warn('Could not save correlation to database:', error)

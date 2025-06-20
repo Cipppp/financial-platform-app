@@ -15,6 +15,8 @@ const docClient = DynamoDBDocumentClient.from(client)
 
 // Table names based on your infrastructure
 const getTableName = (table: string) => {
+  if (table === 'users') return 'app-financial-platform-users'
+  if (table === 'portfolios') return 'app-financial-platform-portfolios'
   const environment = process.env.NODE_ENV === 'production' ? 'prod' : 'app'
   return `${environment}-financial-platform-${table}`
 }

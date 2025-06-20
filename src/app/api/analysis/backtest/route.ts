@@ -2,9 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
+import { BacktestRepository } from '@/lib/dynamodb/repositories/BacktestRepository'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
 
-const prisma = new PrismaClient()
+const backtestRepo = new BacktestRepository()
+const userRepo = new UserRepository()
 
 interface BacktestParams {
   symbol: string
@@ -358,26 +360,22 @@ export async function POST(request: NextRequest) {
     const result = runBacktest(historicalData, body)
     
     // Save result to database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
+    const user = await userRepo.findByEmail(session.user.email)
     
     if (user) {
-      await prisma.backtestResult.create({
-        data: {
-          userId: user.id,
-          strategy: result.strategy,
-          symbol: result.symbol,
-          startDate: new Date(result.startDate),
-          endDate: new Date(result.endDate),
-          totalReturn: result.totalReturn,
-          annualizedReturn: result.annualizedReturn,
-          sharpeRatio: result.sharpeRatio,
-          maxDrawdown: result.maxDrawdown,
-          winRate: result.winRate,
-          totalTrades: result.totalTrades,
-          parameters: parameters as any
-        }
+      await backtestRepo.create({
+        userId: user.id,
+        strategy: result.strategy,
+        symbol: result.symbol,
+        startDate: result.startDate,
+        endDate: result.endDate,
+        totalReturn: result.totalReturn,
+        annualizedReturn: result.annualizedReturn,
+        sharpeRatio: result.sharpeRatio,
+        maxDrawdown: result.maxDrawdown,
+        winRate: result.winRate,
+        totalTrades: result.totalTrades,
+        parameters: parameters
       })
     }
     
@@ -403,19 +401,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
     
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    })
+    const user = await userRepo.findByEmail(session.user.email)
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
-    const backtestResults = await prisma.backtestResult.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: limit
-    })
+    const backtestResults = await backtestRepo.findByUserId(user.id, limit)
     
     return NextResponse.json({ results: backtestResults })
     

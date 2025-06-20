@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
+const portfolioRepo = new PortfolioRepository()
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,10 +27,7 @@ export async function POST(request: NextRequest) {
     const total = shares * price
 
     // Get user's portfolio
-    const portfolio = await prisma.portfolio.findUnique({
-      where: { userId: session.user.id },
-      include: { holdings: true }
-    })
+    const portfolio = await portfolioRepo.findByUserId(session.user.id)
 
     if (!portfolio) {
       return NextResponse.json(
@@ -41,99 +37,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (type === 'BUY') {
-      // Check if user has enough balance
-      if (portfolio.currentBalance < total) {
-        return NextResponse.json(
-          { error: 'Insufficient funds' },
-          { status: 400 }
-        )
-      }
-
-      // Find existing holding or create new one
-      const existingHolding = portfolio.holdings.find(h => h.symbol === symbol)
-
-      if (existingHolding) {
-        // Update existing holding (calculate new average price)
-        const totalShares = existingHolding.shares + shares
-        const totalCost = (existingHolding.shares * existingHolding.avgPrice) + total
-        const newAvgPrice = totalCost / totalShares
-
-        await prisma.holding.update({
-          where: { id: existingHolding.id },
-          data: {
-            shares: totalShares,
-            avgPrice: newAvgPrice,
-            currentPrice: price,
-          }
-        })
-      } else {
-        // Create new holding
-        await prisma.holding.create({
-          data: {
-            portfolioId: portfolio.id,
-            symbol,
-            shares,
-            avgPrice: price,
-            currentPrice: price,
-          }
-        })
-      }
-
-      // Update portfolio balance
-      await prisma.portfolio.update({
-        where: { id: portfolio.id },
-        data: {
-          currentBalance: portfolio.currentBalance - total
-        }
-      })
-
-    } else if (type === 'SELL') {
-      // Find existing holding
-      const existingHolding = portfolio.holdings.find(h => h.symbol === symbol)
-
-      if (!existingHolding || existingHolding.shares < shares) {
-        return NextResponse.json(
-          { error: 'Insufficient shares to sell' },
-          { status: 400 }
-        )
-      }
-
-      if (existingHolding.shares === shares) {
-        // Remove holding completely
-        await prisma.holding.delete({
-          where: { id: existingHolding.id }
-        })
-      } else {
-        // Update holding
-        await prisma.holding.update({
-          where: { id: existingHolding.id },
-          data: {
-            shares: existingHolding.shares - shares,
-            currentPrice: price,
-          }
-        })
-      }
-
-      // Update portfolio balance
-      await prisma.portfolio.update({
-        where: { id: portfolio.id },
-        data: {
-          currentBalance: portfolio.currentBalance + total
-        }
-      })
-    }
-
-    // Record the trade
-    await prisma.trade.create({
-      data: {
-        userId: session.user.id,
+      // Execute buy trade
+      await portfolioRepo.executeBuyTrade(
+        portfolio.id,
+        session.user.id,
         symbol,
-        type: type as 'BUY' | 'SELL',
         shares,
-        price,
-        total,
-      }
-    })
+        price
+      )
+    } else if (type === 'SELL') {
+      // Execute sell trade
+      await portfolioRepo.executeSellTrade(
+        portfolio.id,
+        session.user.id,
+        symbol,
+        shares,
+        price
+      )
+    }
 
     return NextResponse.json({
       message: `Successfully ${type.toLowerCase()}ed ${shares} shares of ${symbol}`,

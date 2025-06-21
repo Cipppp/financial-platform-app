@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
-import { dynamoDBService } from '@/lib/dynamodb-client'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
+
+const userRepo = new UserRepository()
+const portfolioRepo = new PortfolioRepository()
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await dynamoDBService.getUserByEmail(email)
+    const existingUser = await userRepo.findByEmail(email)
 
     if (existingUser) {
       return NextResponse.json(
@@ -23,23 +27,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const user = await dynamoDBService.createUser({
+    // Create user (password will be hashed in userRepo.create)
+    const user = await userRepo.create({
       email,
-      password: hashedPassword,
+      password,
       name: name || email.split('@')[0],
     })
 
     // Create initial portfolio with $10,000 demo money
-    await dynamoDBService.createPortfolio({
-      userId: user.id,
-      initialBalance: 10000,
-      currentBalance: 10000,
-      totalValue: 10000,
-    })
+    await portfolioRepo.create(user.id, 10000)
 
     return NextResponse.json({
       message: 'User created successfully',

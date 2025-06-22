@@ -13,6 +13,7 @@ export interface Portfolio {
 }
 
 export interface Holding {
+  id: string
   portfolioId: string
   symbol: string
   shares: number
@@ -126,6 +127,7 @@ export class PortfolioRepository {
   async getHoldings(portfolioId: string): Promise<Holding[]> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.HOLDINGS,
+      IndexName: 'portfolioId-index',
       KeyConditionExpression: 'portfolioId = :portfolioId',
       ExpressionAttributeValues: {
         ':portfolioId': portfolioId
@@ -139,33 +141,36 @@ export class PortfolioRepository {
    * Get a specific holding
    */
   async getHolding(portfolioId: string, symbol: string): Promise<Holding | null> {
-    const result = await docClient.send(new GetCommand({
+    const result = await docClient.send(new QueryCommand({
       TableName: TABLES.HOLDINGS,
-      Key: { portfolioId, symbol: symbol.toUpperCase() }
+      IndexName: 'portfolioId-index',
+      KeyConditionExpression: 'portfolioId = :portfolioId',
+      FilterExpression: 'symbol = :symbol',
+      ExpressionAttributeValues: {
+        ':portfolioId': portfolioId,
+        ':symbol': symbol.toUpperCase()
+      }
     }))
 
-    return result.Item as Holding || null
+    return result.Items?.[0] as Holding || null
   }
 
   /**
    * Add or update a holding
    */
-  async upsertHolding(holding: Omit<Holding, 'createdAt' | 'updatedAt'>): Promise<void> {
+  async upsertHolding(holding: Omit<Holding, 'id' | 'createdAt' | 'updatedAt'>): Promise<void> {
     const now = new Date().toISOString()
     const existingHolding = await this.getHolding(holding.portfolioId, holding.symbol)
 
     if (existingHolding) {
       // Update existing holding
-      const newShares = holding.shares
-      const newAvgPrice = holding.avgPrice
-      
       await docClient.send(new UpdateCommand({
         TableName: TABLES.HOLDINGS,
-        Key: { portfolioId: holding.portfolioId, symbol: holding.symbol.toUpperCase() },
+        Key: { id: existingHolding.id },
         UpdateExpression: 'SET shares = :shares, avgPrice = :avgPrice, currentPrice = :currentPrice, updatedAt = :updatedAt',
         ExpressionAttributeValues: {
-          ':shares': newShares,
-          ':avgPrice': newAvgPrice,
+          ':shares': holding.shares,
+          ':avgPrice': holding.avgPrice,
           ':currentPrice': holding.currentPrice,
           ':updatedAt': now
         }
@@ -175,6 +180,7 @@ export class PortfolioRepository {
       await docClient.send(new PutCommand({
         TableName: TABLES.HOLDINGS,
         Item: {
+          id: crypto.randomUUID(),
           ...holding,
           symbol: holding.symbol.toUpperCase(),
           createdAt: now,
@@ -188,25 +194,31 @@ export class PortfolioRepository {
    * Update holding price
    */
   async updateHoldingPrice(portfolioId: string, symbol: string, currentPrice: number): Promise<void> {
-    await docClient.send(new UpdateCommand({
-      TableName: TABLES.HOLDINGS,
-      Key: { portfolioId, symbol: symbol.toUpperCase() },
-      UpdateExpression: 'SET currentPrice = :currentPrice, updatedAt = :updatedAt',
-      ExpressionAttributeValues: {
-        ':currentPrice': currentPrice,
-        ':updatedAt': new Date().toISOString()
-      }
-    }))
+    const holding = await this.getHolding(portfolioId, symbol)
+    if (holding) {
+      await docClient.send(new UpdateCommand({
+        TableName: TABLES.HOLDINGS,
+        Key: { id: holding.id },
+        UpdateExpression: 'SET currentPrice = :currentPrice, updatedAt = :updatedAt',
+        ExpressionAttributeValues: {
+          ':currentPrice': currentPrice,
+          ':updatedAt': new Date().toISOString()
+        }
+      }))
+    }
   }
 
   /**
    * Remove a holding (when shares reach 0)
    */
   async removeHolding(portfolioId: string, symbol: string): Promise<void> {
-    await docClient.send(new DeleteCommand({
-      TableName: TABLES.HOLDINGS,
-      Key: { portfolioId, symbol: symbol.toUpperCase() }
-    }))
+    const holding = await this.getHolding(portfolioId, symbol)
+    if (holding) {
+      await docClient.send(new DeleteCommand({
+        TableName: TABLES.HOLDINGS,
+        Key: { id: holding.id }
+      }))
+    }
   }
 
   /**

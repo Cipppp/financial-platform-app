@@ -6,6 +6,8 @@ RUN apk add --no-cache libc6-compat curl
 
 WORKDIR /app
 
+
+
 # Copy package files
 COPY package.json package-lock.json* ./
 

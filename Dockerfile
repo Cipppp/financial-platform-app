@@ -1,6 +1,8 @@
 # Simplified single-stage build for Next.js financial platform
 FROM public.ecr.aws/docker/library/node:18-alpine
 
+
+
 # Install dependencies for building and runtime
 RUN apk add --no-cache libc6-compat curl
 

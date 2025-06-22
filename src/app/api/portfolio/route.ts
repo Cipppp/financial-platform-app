@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { dynamoDBService } from '@/lib/dynamodb-client'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
+
+const portfolioRepo = new PortfolioRepository()
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const portfolio = await dynamoDBService.getPortfolioByUserId(session.user.id)
+    const portfolio = await portfolioRepo.findByUserId(session.user.id)
 
     if (!portfolio) {
       return NextResponse.json(
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get holdings for this portfolio
-    const holdings = await dynamoDBService.getHoldingsByPortfolioId(portfolio.id)
+    const holdings = await portfolioRepo.getHoldings(portfolio.id)
 
     // Calculate total portfolio value by fetching current prices
     let totalValue = portfolio.currentBalance
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
         totalValue += currentValue
 
         // Update current price in database
-        await dynamoDBService.updateHolding(holding.id, { currentPrice })
+        await portfolioRepo.updateHoldingPrice(portfolio.id, holding.symbol, currentPrice)
       } catch (error) {
         console.error(`Error fetching price for ${holding.symbol}:`, error)
         // Use stored price if error
@@ -76,10 +78,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Update total value in database
-    await dynamoDBService.updatePortfolio(portfolio.id, { 
-      totalValue, 
-      currentBalance: portfolio.currentBalance 
-    })
+    await portfolioRepo.updateTotalValue(portfolio.id, totalValue)
 
     const dailyChange = totalValue - portfolio.initialBalance
     const totalReturn = ((totalValue - portfolio.initialBalance) / portfolio.initialBalance) * 100

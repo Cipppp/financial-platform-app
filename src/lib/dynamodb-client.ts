@@ -1,24 +1,23 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand, PutCommand, QueryCommand, UpdateCommand, DeleteCommand, ScanCommand } from '@aws-sdk/lib-dynamodb'
 import { v4 as uuidv4 } from 'uuid'
+import { config } from './config'
 
 const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'eu-west-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    sessionToken: process.env.AWS_SESSION_TOKEN,
-  },
+  region: config.aws.region,
 })
 
 const docClient = DynamoDBDocumentClient.from(client)
 
-// Table names based on your infrastructure
+// Table names from environment variables
 const getTableName = (table: string) => {
-  if (table === 'users') return 'app-financial-platform-users'
-  if (table === 'portfolios') return 'app-financial-platform-portfolios'
-  const environment = process.env.NODE_ENV === 'production' ? 'prod' : 'app'
-  return `${environment}-financial-platform-${table}`
+  const tableMap: Record<string, string> = {
+    'users': config.tables.users,
+    'portfolios': config.tables.portfolios,
+    'holdings': config.tables.holdings,
+    'trades': config.tables.trades,
+  }
+  return tableMap[table] || `financial-platform-${table}`
 }
 
 export interface User {
@@ -267,8 +266,8 @@ export class DynamoDBService {
 
     // Reset portfolio balance
     await this.updatePortfolio(portfolio.id, {
-      currentBalance: 10000,
-      totalValue: 10000,
+      currentBalance: config.app.initialPortfolioBalance,
+      totalValue: config.app.initialPortfolioBalance,
     })
   }
 }

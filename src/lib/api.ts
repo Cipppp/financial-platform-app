@@ -1,6 +1,7 @@
-import { StockData, ChartDataPoint } from './types'  // ← ADAUGĂ ACEASTĂ LINIE
+import { StockData, ChartDataPoint } from './types'
+import { config } from './config'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+const API_BASE = config.api.baseUrl
 
 export class FinancialAPI {
   private static instance: FinancialAPI

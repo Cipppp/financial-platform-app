@@ -136,6 +136,14 @@ export default function TradingSidePanel({ stock, isOpen, onClose, onTradeComple
   const dollarAmountNum = parseFloat(dollarAmount) || 0
   const calculatedShares = useSharesInput ? sharesNum : dollarAmountNum / stock.price
   const totalCost = calculatedShares * stock.price
+
+  // Format shares to show whole numbers when they're whole, otherwise up to 4 decimals
+  const formatShares = (shares: number) => {
+    if (shares === Math.floor(shares)) {
+      return shares.toString()
+    }
+    return shares.toFixed(4).replace(/\.?0+$/, '')
+  }
   const effectivePrice = orderType === 'limit' ? (parseFloat(limitPrice) || stock.price) : stock.price
 
   const handleTrade = async () => {
@@ -476,7 +484,7 @@ export default function TradingSidePanel({ stock, isOpen, onClose, onTradeComple
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span>Shares:</span>
-                  <span className="font-medium">{calculatedShares.toFixed(4)}</span>
+                  <span className="font-medium">{formatShares(calculatedShares)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Price per share:</span>
@@ -502,7 +510,7 @@ export default function TradingSidePanel({ stock, isOpen, onClose, onTradeComple
                 : 'bg-red-600 hover:bg-red-700'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {loading ? 'Processing...' : `${tradeType} ${calculatedShares.toFixed(4)} Shares`}
+            {loading ? 'Processing...' : `${tradeType} ${formatShares(calculatedShares)} ${calculatedShares === 1 ? 'Share' : 'Shares'}`}
           </button>
         </div>
       </div>

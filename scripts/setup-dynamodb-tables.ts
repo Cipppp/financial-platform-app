@@ -1,6 +1,24 @@
 import { CreateTableCommand, DescribeTableCommand, ListTablesCommand } from '@aws-sdk/client-dynamodb'
-import { dynamoClient } from '../src/lib/dynamodb/client'
-import { TABLES } from '../src/lib/dynamodb/config'
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { config } from '../src/lib/config'
+
+const dynamoClient = new DynamoDBClient({
+  region: config.aws.region,
+})
+
+const TABLES = {
+  USERS: config.tables.users,
+  PORTFOLIOS: config.tables.portfolios,
+  HOLDINGS: config.tables.holdings,
+  TRADES: config.tables.trades,
+  MARKET_DATA: config.tables.marketData,
+  TECHNICAL_INDICATORS: config.tables.technicalIndicators,
+  PREDICTIONS: config.tables.predictions,
+  SENTIMENT_DATA: config.tables.sentimentData,
+  CORRELATIONS: config.tables.correlations,
+  ECONOMIC_INDICATORS: config.tables.economicIndicators,
+  BACKTEST_RESULTS: config.tables.backtestResults,
+}
 
 const tableDefinitions = [
   {
@@ -17,11 +35,9 @@ const tableDefinitions = [
         IndexName: 'EmailIndex',
         KeySchema: [{ AttributeName: 'email', KeyType: 'HASH' }],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.PORTFOLIOS,
@@ -37,11 +53,9 @@ const tableDefinitions = [
         IndexName: 'UserIndex',
         KeySchema: [{ AttributeName: 'userId', KeyType: 'HASH' }],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.HOLDINGS,
@@ -53,8 +67,7 @@ const tableDefinitions = [
       { AttributeName: 'portfolioId', AttributeType: 'S' },
       { AttributeName: 'symbol', AttributeType: 'S' }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.TRADES,
@@ -74,11 +87,9 @@ const tableDefinitions = [
           { AttributeName: 'createdAt', KeyType: 'RANGE' }
         ],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.MARKET_DATA,
@@ -103,8 +114,7 @@ const tableDefinitions = [
       { AttributeName: 'symbol', AttributeType: 'S' },
       { AttributeName: 'timestamp', AttributeType: 'S' }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.PREDICTIONS,
@@ -124,11 +134,9 @@ const tableDefinitions = [
           { AttributeName: 'createdAt', KeyType: 'RANGE' }
         ],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.SENTIMENT_DATA,
@@ -148,11 +156,9 @@ const tableDefinitions = [
           { AttributeName: 'timestamp', KeyType: 'RANGE' }
         ],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.ECONOMIC_INDICATORS,
@@ -164,8 +170,7 @@ const tableDefinitions = [
       { AttributeName: 'indicator', AttributeType: 'S' },
       { AttributeName: 'timestamp', AttributeType: 'S' }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.BACKTEST_RESULTS,
@@ -185,11 +190,9 @@ const tableDefinitions = [
           { AttributeName: 'createdAt', KeyType: 'RANGE' }
         ],
         Projection: { ProjectionType: 'ALL' },
-        ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
       }
     ],
-    BillingMode: 'PROVISIONED',
-    ProvisionedThroughput: { ReadCapacityUnits: 5, WriteCapacityUnits: 5 }
+    BillingMode: 'PAY_PER_REQUEST'
   }
 ]
 
@@ -218,8 +221,7 @@ async function createTable(tableDefinition: any) {
 
 async function setupTables() {
   console.log('🏗️  Setting up DynamoDB tables...')
-  console.log(`📍 Region: ${process.env.AWS_REGION || 'us-east-1'}`)
-  console.log(`🏷️  Table prefix: ${process.env.DYNAMODB_TABLE_PREFIX || 'financial-platform'}`)
+  console.log(`📍 Region: ${config.aws.region}`)
   
   try {
     // Test connection first
@@ -228,8 +230,7 @@ async function setupTables() {
   } catch (error) {
     console.error('❌ Failed to connect to DynamoDB:', error)
     console.log('\n💡 Make sure your AWS credentials are configured:')
-    console.log('   - Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in .env')
-    console.log('   - Or configure AWS CLI: aws configure')
+    console.log('   - Configure AWS CLI: aws configure')
     console.log('   - Or use IAM roles if running on AWS')
     process.exit(1)
   }

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TiingoQuote, StockData } from '@/lib/types'
+import { config } from '@/lib/config'
 
-const TIINGO_API_KEY = process.env.TIINGO_API_KEY
-const TIINGO_BASE_URL = 'https://api.tiingo.com/tiingo'
+const TIINGO_API_KEY = config.api.tiingo.apiKey
+const TIINGO_BASE_URL = config.api.tiingo.baseUrl
 
 export async function GET(
   request: NextRequest,

@@ -66,7 +66,7 @@ export class PortfolioRepository {
   async findByUserId(userId: string): Promise<Portfolio | null> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.PORTFOLIOS,
-      IndexName: 'UserIndex',
+      IndexName: 'userId-index',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId
@@ -235,7 +235,7 @@ export class PortfolioRepository {
   async getTradeHistory(userId: string, limit: number = 50): Promise<Trade[]> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.TRADES,
-      IndexName: 'UserTradesIndex',
+      IndexName: 'userId-createdAt-index',
       KeyConditionExpression: 'userId = :userId',
       ExpressionAttributeValues: {
         ':userId': userId
@@ -349,5 +349,36 @@ export class PortfolioRepository {
       price,
       total
     })
+  }
+
+  /**
+   * Reset user portfolio - delete all holdings, trades, and reset balance to $10,000
+   */
+  async resetUserPortfolio(userId: string): Promise<void> {
+    // Find user's portfolio
+    const portfolio = await this.findByUserId(userId)
+    
+    if (!portfolio) {
+      throw new Error('Portfolio not found')
+    }
+
+    // Delete all holdings for this portfolio
+    const holdings = await this.getHoldings(portfolio.id)
+    for (const holding of holdings) {
+      await this.removeHolding(portfolio.id, holding.symbol)
+    }
+
+    // Delete all trades for this user using scan (since we're deleting all)
+    const trades = await this.getTradeHistory(userId, 1000) // Get a large number
+    for (const trade of trades) {
+      await docClient.send(new DeleteCommand({
+        TableName: TABLES.TRADES,
+        Key: { id: trade.id }
+      }))
+    }
+
+    // Reset portfolio balance to $10,000
+    await this.updateBalance(portfolio.id, 10000)
+    await this.updateTotalValue(portfolio.id, 10000)
   }
 }

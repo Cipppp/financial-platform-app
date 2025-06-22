@@ -2,7 +2,11 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { dynamoDBService } from '@/lib/dynamodb-client'
+import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
+import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
+
+const userRepo = new UserRepository()
+const portfolioRepo = new PortfolioRepository()
 
 export async function POST() {
   try {
@@ -13,14 +17,14 @@ export async function POST() {
     }
 
     // Find the user
-    const user = await dynamoDBService.getUserByEmail(session.user.email)
+    const user = await userRepo.findByEmail(session.user.email)
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     // Reset user portfolio (handles all cleanup and reset)
-    await dynamoDBService.resetUserPortfolio(user.id)
+    await portfolioRepo.resetUserPortfolio(user.id)
 
     return NextResponse.json({ 
       message: 'Portfolio reset successfully',

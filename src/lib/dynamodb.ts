@@ -1,18 +1,15 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb'
+import { config } from './config'
 
+// Production client using IAM roles (no hardcoded credentials)
 const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    sessionToken: process.env.AWS_SESSION_TOKEN,
-  },
+  region: config.aws.region,
 })
 
 const docClient = DynamoDBDocumentClient.from(client)
 
-const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'financial-platform-cache'
+const TABLE_NAME = config.tables.cache
 
 export interface CacheItem {
   key: string
@@ -49,7 +46,7 @@ export class DynamoDBCache {
     }
   }
 
-  static async set(key: string, data: any, ttlMinutes: number = 15): Promise<boolean> {
+  static async set(key: string, data: any, ttlMinutes: number = config.app.cacheTimeoutMinutes): Promise<boolean> {
     try {
       const timestamp = Date.now()
       const ttl = Math.floor(timestamp / 1000) + (ttlMinutes * 60)

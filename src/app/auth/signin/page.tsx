@@ -60,59 +60,51 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-20 left-40 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
 
       <div className="relative max-w-md w-full space-y-8">
         {/* Back to Home */}
         <Link 
           href="/"
-          className="inline-flex items-center text-blue-200 hover:text-white transition-colors duration-200 group"
+          className="inline-flex items-center text-gray-400 hover:text-white transition-colors duration-200 group"
         >
           <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
           Back to Home
         </Link>
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+        <div className="bg-gray-900 p-8 border border-gray-800 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center space-x-2 mb-6">
-              <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl">
-                <TrendingUp className="h-8 w-8 text-white" />
+              <div className="p-3 bg-white">
+                <TrendingUp className="h-8 w-8 text-black" />
               </div>
               <span className="text-2xl font-bold text-white">Financial Platform</span>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">
-              Welcome Back
+              Account Access
             </h2>
-            <p className="text-blue-200">
-              Sign in to continue your trading journey
+            <p className="text-gray-400">
+              Sign in to access your trading environment
             </p>
           </div>
 
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-6 p-4 bg-green-500/20 border border-green-400/30 rounded-xl backdrop-blur-sm">
+            <div className="mb-6 p-4 bg-gray-800 border border-gray-700">
               <div className="flex items-center space-x-2">
-                <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
-                <span className="text-green-100 text-sm font-medium">{successMessage}</span>
+                <CheckCircle className="h-5 w-5 text-white flex-shrink-0" />
+                <span className="text-gray-200 text-sm font-medium">{successMessage}</span>
               </div>
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-sm">
+            <div className="mb-6 p-4 bg-red-900 border border-red-700">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-red-400 rounded-full flex-shrink-0"></div>
-                <span className="text-red-100 text-sm font-medium">{error}</span>
+                <div className="w-2 h-2 bg-red-400 flex-shrink-0"></div>
+                <span className="text-red-200 text-sm font-medium">{error}</span>
               </div>
             </div>
           )}
@@ -120,12 +112,12 @@ export default function SignIn() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email Field */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-blue-100">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-blue-300" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 text-gray-500" />
                 </div>
                 <input
                   id="email"
@@ -133,7 +125,7 @@ export default function SignIn() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="block w-full pl-12 pr-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="block w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-200"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -143,12 +135,12 @@ export default function SignIn() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-blue-100">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-blue-300" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-gray-500" />
                 </div>
                 <input
                   id="password"
@@ -156,20 +148,20 @@ export default function SignIn() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
-                  className="block w-full pl-12 pr-12 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="block w-full pl-10 pr-12 py-3 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-200"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-blue-300 hover:text-white transition-colors" />
+                    <EyeOff className="h-4 w-4 text-gray-500 hover:text-white transition-colors" />
                   ) : (
-                    <Eye className="h-5 w-5 text-blue-300 hover:text-white transition-colors" />
+                    <Eye className="h-4 w-4 text-gray-500 hover:text-white transition-colors" />
                   )}
                 </button>
               </div>
@@ -180,7 +172,7 @@ export default function SignIn() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center items-center py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-blue-500/25"
+                className="group relative w-full flex justify-center items-center py-4 px-6 bg-white text-black font-bold hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 border border-white"
               >
                 {loading ? (
                   <>
@@ -190,7 +182,7 @@ export default function SignIn() {
                 ) : (
                   <>
                     <TrendingUp className="mr-2 h-5 w-5" />
-                    Sign In to Dashboard
+                    Access Dashboard
                   </>
                 )}
               </button>
@@ -198,13 +190,13 @@ export default function SignIn() {
           </form>
 
           {/* Divider */}
-          <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="mt-8 pt-6 border-t border-gray-800">
             <div className="text-center">
-              <p className="text-blue-200">
+              <p className="text-gray-400">
                 New to our platform?{' '}
                 <Link 
                   href="/auth/signup" 
-                  className="font-semibold text-green-400 hover:text-green-300 transition-colors duration-200"
+                  className="font-semibold text-white hover:text-gray-300 transition-colors duration-200"
                 >
                   Create account & get $10,000
                 </Link>
@@ -212,22 +204,22 @@ export default function SignIn() {
             </div>
 
             {/* Benefits Preview */}
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-400/20">
+            <div className="mt-6 p-4 bg-gray-800 border border-gray-700">
               <div className="flex items-center justify-center space-x-2 mb-2">
-                <DollarSign className="h-5 w-5 text-green-400" />
-                <span className="text-green-300 font-semibold">What awaits you</span>
+                <DollarSign className="h-5 w-5 text-white" />
+                <span className="text-white font-semibold">Platform Access</span>
               </div>
-              <div className="space-y-2 text-sm text-green-100">
+              <div className="space-y-2 text-sm text-gray-300">
                 <div className="flex items-center space-x-2">
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                  <div className="w-1 h-1 bg-white"></div>
                   <span>$10,000 virtual trading balance</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                  <div className="w-1 h-1 bg-white"></div>
                   <span>Real-time market data & analytics</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                  <div className="w-1 h-1 bg-white"></div>
                   <span>Professional trading tools</span>
                 </div>
               </div>
@@ -237,8 +229,8 @@ export default function SignIn() {
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-blue-300 text-sm">
-            © 2025 Financial Trading Platform. Practice trading with virtual money.
+          <p className="text-gray-500 text-sm">
+            © 2025 Financial Trading Platform. Virtual capital simulation.
           </p>
         </div>
       </div>

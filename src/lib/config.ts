@@ -16,10 +16,6 @@ export const config = {
       baseUrl: process.env.TIINGO_BASE_URL!,
       apiKey: process.env.TIINGO_API_KEY!,
     },
-    alphaVantage: {
-      baseUrl: process.env.ALPHA_VANTAGE_BASE_URL!,
-      apiKey: process.env.ALPHA_VANTAGE_API_KEY!,
-    },
   },
 
   // Application Settings
@@ -59,8 +55,6 @@ export function validateConfig() {
     'NEXT_PUBLIC_API_URL',
     'TIINGO_BASE_URL',
     'TIINGO_API_KEY',
-    'ALPHA_VANTAGE_BASE_URL',
-    'ALPHA_VANTAGE_API_KEY',
     'INITIAL_PORTFOLIO_BALANCE',
     'CACHE_TIMEOUT_MINUTES',
     'NODE_ENV',

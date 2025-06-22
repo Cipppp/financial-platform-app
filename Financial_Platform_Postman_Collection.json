@@ -1,0 +1,1238 @@
+{
+  "info": {
+    "name": "Financial Platform - Complete API Collection",
+    "description": "Comprehensive Postman collection for testing all Financial Platform endpoints and functionality",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://marketfinancehub.com",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🏥 Health & System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Health check returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Health check response has correct structure', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('status');",
+                  "    pm.expect(response).to.have.property('timestamp');",
+                  "    pm.expect(response).to.have.property('service');",
+                  "    pm.expect(response.status).to.eql('healthy');",
+                  "    pm.expect(response.service).to.eql('financial-platform');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPassword123!\",\n  \"name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Signup successful or user exists', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.test('Signup response has user data', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response).to.have.property('user');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "NextAuth Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Extract session token if available",
+                  "if (pm.response.headers.get('set-cookie')) {",
+                  "    const cookies = pm.response.headers.get('set-cookie');",
+                  "    console.log('Session cookies:', cookies);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📈 Market Data",
+      "item": [
+        {
+          "name": "Get Stock List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stocks?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stocks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Stock list returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Stock list has pagination', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response).to.have.property('pagination');",
+                  "    pm.expect(response.pagination).to.have.property('page');",
+                  "    pm.expect(response.pagination).to.have.property('limit');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Individual Stock - AAPL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stocks/AAPL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stocks", "AAPL"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('AAPL stock data returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('AAPL stock has required fields', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('symbol');",
+                  "    pm.expect(response).to.have.property('name');",
+                  "    pm.expect(response).to.have.property('price');",
+                  "    pm.expect(response.symbol).to.eql('AAPL');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Stock Chart Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stocks/chart/AAPL?startDate=2024-01-01&endDate=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stocks", "chart", "AAPL"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Chart data returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Chart data has OHLC structure', function () {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.length > 0) {",
+                  "        const firstPoint = response.data[0];",
+                  "        pm.expect(firstPoint).to.have.property('date');",
+                  "        pm.expect(firstPoint).to.have.property('open');",
+                  "        pm.expect(firstPoint).to.have.property('high');",
+                  "        pm.expect(firstPoint).to.have.property('low');",
+                  "        pm.expect(firstPoint).to.have.property('close');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Market Indices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/market/indices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "indices"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Market indices returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Market indices has major indices', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an('array');",
+                  "    if (response.length > 0) {",
+                  "        const firstIndex = response[0];",
+                  "        pm.expect(firstIndex).to.have.property('symbol');",
+                  "        pm.expect(firstIndex).to.have.property('name');",
+                  "        pm.expect(firstIndex).to.have.property('price');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Market Gainers & Losers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/market/gainers-losers?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "market", "gainers-losers"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Gainers/losers returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Gainers/losers has both categories', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('gainers');",
+                  "    pm.expect(response).to.have.property('losers');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💼 Portfolio Management",
+      "item": [
+        {
+          "name": "Get Portfolio Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portfolio"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Portfolio overview returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Portfolio has required fields', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('totalValue');",
+                  "    pm.expect(response).to.have.property('cash');",
+                  "    pm.expect(response).to.have.property('positions');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Stock Position",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/portfolio/position/AAPL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portfolio", "position", "AAPL"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Position data returns 200 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Position has required fields', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response).to.have.property('symbol');",
+                  "        pm.expect(response).to.have.property('shares');",
+                  "        pm.expect(response).to.have.property('averagePrice');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset Portfolio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/portfolio/reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "portfolio", "reset"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Portfolio reset successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Reset response confirms action', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💱 Trading",
+      "item": [
+        {
+          "name": "Buy Stock Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"AAPL\",\n  \"type\": \"BUY\",\n  \"shares\": 10,\n  \"price\": 150.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trade"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Buy order successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Trade response has order details', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('orderId');",
+                  "    pm.expect(response).to.have.property('symbol');",
+                  "    pm.expect(response).to.have.property('type');",
+                  "    pm.expect(response.type).to.eql('BUY');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sell Stock Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"AAPL\",\n  \"type\": \"SELL\",\n  \"shares\": 5,\n  \"price\": 155.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trade"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Sell order successful or insufficient shares', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Trade response has order details', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response).to.have.property('orderId');",
+                  "        pm.expect(response).to.have.property('symbol');",
+                  "        pm.expect(response).to.have.property('type');",
+                  "        pm.expect(response.type).to.eql('SELL');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Trading History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Trading history returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Trading history is an array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Analysis Tools",
+      "item": [
+        {
+          "name": "Technical Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/technical?symbol=AAPL&period=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "technical"],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "AAPL"
+                },
+                {
+                  "key": "period",
+                  "value": "30"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Technical analysis returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Technical analysis has indicators', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('rsi');",
+                  "    pm.expect(response).to.have.property('macd');",
+                  "    pm.expect(response).to.have.property('bollingerBands');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Correlation Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/correlation?symbol1=AAPL&symbol2=MSFT&timeframe=1Y",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "correlation"],
+              "query": [
+                {
+                  "key": "symbol1",
+                  "value": "AAPL"
+                },
+                {
+                  "key": "symbol2",
+                  "value": "MSFT"
+                },
+                {
+                  "key": "timeframe",
+                  "value": "1Y"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Correlation analysis returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Correlation has coefficient', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('correlation');",
+                  "    pm.expect(response.correlation).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Risk Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/risk/analysis?symbol=AAPL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "risk", "analysis"],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "AAPL"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Risk analysis returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Risk analysis has metrics', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('var');",
+                  "    pm.expect(response).to.have.property('sharpeRatio');",
+                  "    pm.expect(response).to.have.property('beta');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Run Backtest",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"AAPL\",\n  \"strategy\": \"sma_crossover\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-12-31\",\n  \"initialCapital\": 10000,\n  \"parameters\": {\n    \"shortPeriod\": 20,\n    \"longPeriod\": 50\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/backtest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "backtest"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Backtest execution successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Backtest has results', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('totalReturn');",
+                  "    pm.expect(response).to.have.property('sharpeRatio');",
+                  "    pm.expect(response).to.have.property('maxDrawdown');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Price Prediction",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"AAPL\",\n  \"timeframe\": \"1W\",\n  \"model\": \"linear_regression\",\n  \"confidence_interval\": 0.95\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/prediction",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "prediction"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Price prediction successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Prediction has forecast data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('prediction');",
+                  "    pm.expect(response).to.have.property('confidence');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sentiment Analysis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/sentiment?symbol=AAPL&days=7",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "sentiment"],
+              "query": [
+                {
+                  "key": "symbol",
+                  "value": "AAPL"
+                },
+                {
+                  "key": "days",
+                  "value": "7"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Sentiment analysis returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Sentiment has score', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('sentiment');",
+                  "    pm.expect(response).to.have.property('score');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏛️ Economic Data",
+      "item": [
+        {
+          "name": "Get Economic Indicators",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/economic/indicators?indicator=GDP&months=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "economic", "indicators"],
+              "query": [
+                {
+                  "key": "indicator",
+                  "value": "GDP"
+                },
+                {
+                  "key": "months",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Economic indicators return 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Economic data has values', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an('array');",
+                  "    if (response.length > 0) {",
+                  "        pm.expect(response[0]).to.have.property('date');",
+                  "        pm.expect(response[0]).to.have.property('value');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Latest Economic Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/economic/indicators?latest=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "economic", "indicators"],
+              "query": [
+                {
+                  "key": "latest",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Latest economic data returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Latest data has multiple indicators', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🌐 Frontend Pages",
+      "item": [
+        {
+          "name": "Landing Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Landing page loads successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Landing page contains HTML', function () {",
+                  "    pm.expect(pm.response.text()).to.include('<html');",
+                  "    pm.expect(pm.response.text()).to.include('Financial');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Dashboard Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Dashboard page loads', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302, 401]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Dashboard contains financial content', function () {",
+                  "        pm.expect(pm.response.text()).to.include('<html');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Portfolio Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "portfolio"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Portfolio page loads', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302, 401]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stock Screener Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/screener",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "screener"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Screener page loads', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302, 401]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Individual Stock Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stocks/AAPL",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "stocks", "AAPL"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Stock detail page loads', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302, 401]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Authentication Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/signin",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Sign-in page loads', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Sign-in page has form', function () {",
+                  "    pm.expect(pm.response.text()).to.include('<html');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🧪 Edge Cases & Error Handling",
+      "item": [
+        {
+          "name": "Invalid Stock Symbol",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stocks/INVALID",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stocks", "INVALID"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid stock returns 404 or error', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([404, 400, 422]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Trade with Insufficient Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"AAPL\",\n  \"type\": \"BUY\",\n  \"shares\": 1000000,\n  \"price\": 150.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trade"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Insufficient funds returns 400', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "});",
+                  "",
+                  "pm.test('Error message explains insufficient funds', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Malformed Request Body",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invalid\": \"json\",\n  \"missing\": \"required_fields\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trade"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Malformed request returns 400', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                  "});",
+                  "",
+                  "pm.test('Error response has validation message', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script for collection-wide setup",
+          "console.log('Running Financial Platform API tests on:', pm.collectionVariables.get('baseUrl'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-wide test script",
+          "pm.test('Response time is reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+          "});",
+          "",
+          "pm.test('No server errors (5xx)', function () {",
+          "    pm.expect(pm.response.code).to.be.below(500);",
+          "});"
+        ]
+      }
+    }
+  ]
+}

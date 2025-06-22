@@ -41,7 +41,7 @@ const TabButton = ({ active, onClick, children }: { active: boolean, onClick: ()
 export default function ResearchPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'sentiment' | 'economic' | 'predictions' | 'technical'>('sentiment')
+  const [activeTab, setActiveTab] = useState<'sentiment' | 'economic' | 'predictions'>('sentiment')
   const [selectedSymbol, setSelectedSymbol] = useState('AAPL')
   const [loading, setLoading] = useState(false)
   
@@ -55,7 +55,6 @@ export default function ResearchPage() {
   const [sentimentData, setSentimentData] = useState<any>(null)
   const [economicData, setEconomicData] = useState<any>(null)
   const [predictions, setPredictions] = useState<any[]>([])
-  const [technicalAnalysis, setTechnicalAnalysis] = useState<any>(null)
 
   // Initialize search term with selected symbol
   useEffect(() => {
@@ -156,9 +155,6 @@ export default function ResearchPage() {
         case 'predictions':
           await loadPredictionsData()
           break
-        case 'technical':
-          await loadTechnicalData()
-          break
       }
     } catch (error) {
       console.error('Error loading tab data:', error)
@@ -228,13 +224,6 @@ export default function ResearchPage() {
     }
   }
 
-  const loadTechnicalData = async () => {
-    const response = await fetch(`/api/analysis/technical?symbol=${selectedSymbol}`)
-    if (response.ok) {
-      const data = await response.json()
-      setTechnicalAnalysis(data)
-    }
-  }
 
 
 
@@ -342,10 +331,6 @@ export default function ResearchPage() {
         <TabButton active={activeTab === 'sentiment'} onClick={() => setActiveTab('sentiment')}>
           <span className="hidden sm:inline">Sentiment Analysis</span>
           <span className="sm:hidden">Sentiment</span>
-        </TabButton>
-        <TabButton active={activeTab === 'technical'} onClick={() => setActiveTab('technical')}>
-          <span className="hidden sm:inline">Technical Analysis</span>
-          <span className="sm:hidden">Technical</span>
         </TabButton>
         <TabButton active={activeTab === 'economic'} onClick={() => setActiveTab('economic')}>
           <span className="hidden sm:inline">Economic Indicators</span>
@@ -486,108 +471,6 @@ export default function ResearchPage() {
           )}
 
 
-          {/* Technical Analysis Tab */}
-          {activeTab === 'technical' && technicalAnalysis && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <h3 className="text-lg font-bold text-black">RSI Analysis</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-black mb-2">
-                        {technicalAnalysis.summary?.rsi?.toFixed(2) || 'N/A'}
-                      </div>
-                      <div className={`text-sm font-medium ${
-                        (technicalAnalysis.summary?.rsi || 0) > 70 ? 'text-red-600' :
-                        (technicalAnalysis.summary?.rsi || 0) < 30 ? 'text-green-600' : 'text-gray-600'
-                      }`}>
-                        {(technicalAnalysis.summary?.rsi || 0) > 70 ? 'Overbought' :
-                         (technicalAnalysis.summary?.rsi || 0) < 30 ? 'Oversold' : 'Neutral'}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <h3 className="text-lg font-bold text-black">MACD</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Line:</span>
-                        <span className="font-medium">{technicalAnalysis.summary?.macd?.line?.toFixed(4) || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Signal:</span>
-                        <span className="font-medium">{technicalAnalysis.summary?.macd?.signal?.toFixed(4) || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Histogram:</span>
-                        <span className={`font-medium ${
-                          (technicalAnalysis.summary?.macd?.histogram || 0) > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {technicalAnalysis.summary?.macd?.histogram?.toFixed(4) || 'N/A'}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <h3 className="text-lg font-bold text-black">Bollinger Bands</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Upper:</span>
-                        <span className="font-medium">{formatCurrency(technicalAnalysis.summary?.bollinger?.upper || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Middle:</span>
-                        <span className="font-medium">{formatCurrency(technicalAnalysis.summary?.bollinger?.middle || 0)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Lower:</span>
-                        <span className="font-medium">{formatCurrency(technicalAnalysis.summary?.bollinger?.lower || 0)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {technicalAnalysis.signals && technicalAnalysis.signals.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <h3 className="text-lg font-bold text-black">Trading Signals</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {technicalAnalysis.signals.map((signal: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center p-3 border border-gray-200 rounded">
-                          <div>
-                            <div className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                              signal.type === 'BUY' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {signal.type}
-                            </div>
-                            <div className="text-sm text-gray-600 mt-1">{signal.indicator}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-medium">{signal.strength}</div>
-                            <div className="text-sm text-gray-600">{signal.confidence}% confidence</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
 
 
           {/* Predictions Tab */}

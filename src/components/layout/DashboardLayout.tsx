@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { TrendingUp, PieChart, Settings, Home, LogOut, User, Search, Menu, X, BarChart3 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface DashboardLayoutProps {
@@ -211,10 +210,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Desktop header */}
-        <header className="hidden lg:flex bg-background/80 backdrop-blur-sm border-b border-border px-6 py-3 justify-end items-center">
-          <ThemeToggle />
-        </header>
         
         {/* Mobile header */}
         <header className="lg:hidden bg-background border-b border-border px-4 py-3 flex items-center justify-between">
@@ -228,7 +223,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="w-8 h-8 bg-foreground rounded text-background flex items-center justify-center">
               <TrendingUp className="w-5 h-5" />
             </div>
-            <ThemeToggle />
           </div>
           <div className="w-6" /> {/* Spacer for centering */}
         </header>

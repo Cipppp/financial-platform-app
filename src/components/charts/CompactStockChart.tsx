@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react'
 import { createChart, ColorType, IChartApi, CandlestickSeries } from 'lightweight-charts'
 import { ChartDataPoint, CandlestickDataPoint } from '@/lib/types'
-import { useTheme } from '@/contexts/ThemeContext'
 
 interface CompactStockChartProps {
   data: ChartDataPoint[] | CandlestickDataPoint[]
@@ -15,12 +14,11 @@ interface CompactStockChartProps {
 export default function CompactStockChart({ data, symbol, currentPrice, isPositive }: CompactStockChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const { theme } = useTheme()
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return
 
-    const isDark = theme === 'dark'
+    const isDark = false
     
     const chart = createChart(chartContainerRef.current, {
       layout: {

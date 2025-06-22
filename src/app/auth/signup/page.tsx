@@ -186,7 +186,7 @@ export default function SignUp() {
                     name="name"
                     type="text"
                     required
-                    className="block w-full pl-8 pr-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
+                    className="block w-full pl-12 pr-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
                     placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -209,7 +209,7 @@ export default function SignUp() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="block w-full pl-8 pr-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
+                    className="block w-full pl-12 pr-4 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -233,7 +233,7 @@ export default function SignUp() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  className="block w-full pl-8 pr-12 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
+                  className="block w-full pl-12 pr-12 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
                   placeholder="Create a secure password"
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
@@ -278,12 +278,12 @@ export default function SignUp() {
 
             {/* Confirm Password Field */}
             <div className="space-y-2">
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 text-gray-500" />
+                  <Lock className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
                   id="confirm-password"
@@ -291,7 +291,7 @@ export default function SignUp() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  className="block w-full pl-8 pr-12 py-3 bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-white focus:border-white transition-all duration-200"
+                  className="block w-full pl-12 pr-12 py-3 bg-white border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all duration-200"
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -302,9 +302,9 @@ export default function SignUp() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-500 hover:text-white transition-colors" />
+                    <EyeOff className="h-4 w-4 text-gray-400 hover:text-black transition-colors" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-500 hover:text-white transition-colors" />
+                    <Eye className="h-4 w-4 text-gray-400 hover:text-black transition-colors" />
                   )}
                 </button>
               </div>

@@ -3,7 +3,6 @@ import { Fira_Code } from "next/font/google";
 import "./globals.css";
 import NextAuthSessionProvider from '@/components/providers/SessionProvider';
 import { SettingsProvider } from '@/contexts/SettingsContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const firaCode = Fira_Code({
   variable: "--font-fira-code",
@@ -27,11 +26,9 @@ export default function RootLayout({
         className={`${firaCode.variable} font-mono antialiased`}
       >
         <NextAuthSessionProvider>
-          <ThemeProvider>
-            <SettingsProvider>
-              {children}
-            </SettingsProvider>
-          </ThemeProvider>
+          <SettingsProvider>
+            {children}
+          </SettingsProvider>
         </NextAuthSessionProvider>
       </body>
     </html>

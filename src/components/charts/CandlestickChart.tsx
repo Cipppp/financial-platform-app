@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react'
 import { createChart, ColorType, IChartApi } from 'lightweight-charts'
 import { CandlestickDataPoint } from '@/lib/types'
-import { useTheme } from '@/contexts/ThemeContext'
 
 interface CandlestickChartProps {
   data: CandlestickDataPoint[]
@@ -14,12 +13,11 @@ interface CandlestickChartProps {
 export default function CandlestickChart({ data, symbol, height = 400 }: CandlestickChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const { theme } = useTheme()
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return
 
-    const isDark = theme === 'dark'
+    const isDark = false
     
     const chart = createChart(chartContainerRef.current, {
       layout: {

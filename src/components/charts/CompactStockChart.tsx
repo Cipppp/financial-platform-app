@@ -118,7 +118,7 @@ export default function CompactStockChart({ data, symbol, currentPrice, isPositi
         chartRef.current = null
       }
     }
-  }, [data, theme, isPositive])
+  }, [data, isPositive])
 
   return (
     <div className="h-32 w-full">

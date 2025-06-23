@@ -92,7 +92,7 @@ export default function StockChart({ data, symbol }: StockChartProps) {
         chartRef.current = null
       }
     }
-  }, [data, theme])
+  }, [data])
 
   return (
     <div className="h-96 w-full">

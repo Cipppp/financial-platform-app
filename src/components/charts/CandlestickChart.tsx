@@ -85,7 +85,7 @@ export default function CandlestickChart({ data, symbol, height = 400 }: Candles
         chartRef.current = null
       }
     }
-  }, [data, theme, height])
+  }, [data, height])
 
   return (
     <div className="w-full">

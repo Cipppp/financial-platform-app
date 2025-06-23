@@ -1,4 +1,3 @@
-// src/app/dashboard/layout.tsx
 import DashboardLayout from '@/components/layout/DashboardLayout'
 
 export default function Layout({

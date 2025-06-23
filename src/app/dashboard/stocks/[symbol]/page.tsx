@@ -1,4 +1,3 @@
-// src/app/dashboard/stocks/[symbol]/page.tsx
 'use client'
 
 import React, { useState, useEffect, use } from 'react'
@@ -200,7 +199,6 @@ export default function StockDetailPage({ params }: StockDetailPageProps) {
           </Card>
         </div>
 
-        {/* Extended Hours Trading, Key Statistics, Performance, and Earnings */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Extended Hours Trading */}
           <Card>

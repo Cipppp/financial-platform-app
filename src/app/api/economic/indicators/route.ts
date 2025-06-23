@@ -1,4 +1,3 @@
-// src/app/api/economic/indicators/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { EconomicIndicatorRepository } from '@/lib/dynamodb/repositories/EconomicIndicatorRepository'
 

@@ -1,4 +1,3 @@
-// src/app/dashboard/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,8 +5,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-
-// Removed POPULAR_STOCKS - now using market gainers/losers
 
 // Modern Card Components
 const Card = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (

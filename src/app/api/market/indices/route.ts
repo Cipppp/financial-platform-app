@@ -1,14 +1,12 @@
-// src/app/api/market/indices/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 
-// Major market indices with their symbols and metadata
 const MARKET_INDICES = [
   {
     symbol: 'SPY',
     name: 'S&P 500',
     description: 'SPDR S&P 500 ETF Trust',
     category: 'LARGE_CAP',
-    constituents: [] // Will be populated from API
+    constituents: []
   },
   {
     symbol: 'QQQ',

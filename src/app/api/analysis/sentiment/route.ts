@@ -1,4 +1,3 @@
-// src/app/api/analysis/sentiment/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { SentimentRepository } from '@/lib/dynamodb/repositories/SentimentRepository'
 
@@ -87,7 +86,6 @@ function generateMockSentimentData(symbol?: string) {
 }
 
 function getSymbolSentimentBias(symbol: string): number {
-  // Add some realistic sentiment biases for different stocks
   const biases: Record<string, number> = {
     'AAPL': 0.1,   // Generally positive sentiment
     'TSLA': 0.05,  // Slightly positive but volatile
@@ -118,13 +116,6 @@ function getCompanyName(symbol: string): string {
 }
 
 async function fetchRealSentiment(symbol: string): Promise<any[]> {
-  // In a real implementation, this would call a news API like:
-  // - NewsAPI
-  // - Alpha Vantage News Sentiment
-  // - Finnhub News Sentiment
-  // - Custom news scraping + NLP
-  
-  // For now, return mock data
   return generateMockSentimentData(symbol)
 }
 

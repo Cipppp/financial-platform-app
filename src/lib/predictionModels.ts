@@ -1,5 +1,3 @@
-// src/lib/predictionModels.ts
-
 export interface PredictionInput {
   prices: number[]
   timestamps: Date[]

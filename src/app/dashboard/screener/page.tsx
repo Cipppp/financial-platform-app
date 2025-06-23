@@ -55,7 +55,6 @@ export default function StockScreenerPage() {
       try {
         setLoading(true)
         
-        // Fetch real stock data from our API
         const response = await fetch('/api/stocks/list')
         if (!response.ok) {
           throw new Error('Failed to fetch stock data')
@@ -80,7 +79,6 @@ export default function StockScreenerPage() {
         
       } catch (err) {
         console.error('Error loading stocks:', err)
-        // Fallback to empty array on error
         setAllStocks([])
         setStocks([])
       } finally {

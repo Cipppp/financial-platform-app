@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       'AAPL', 'GOOGL', 'MSFT', 'AMZN', 'META', 'NVDA', 'TSLA', 'NFLX', 
       'AMD', 'INTC', 'ORCL', 'ADBE', 'CRM', 'PYPL', 'COIN', 'PLTR',
       'F', 'GM', 'DIS', 'BABA', 'NKLA', 'SPCE', 'SHOP', 'SQ'
-    ].slice(0, Math.min(30, limit * 3)) // Limit to prevent API quota issues
+    ].slice(0, Math.min(30, limit * 3))
     const stockPromises = symbols.map(async (symbol) => {
       try {
         const response = await fetch(

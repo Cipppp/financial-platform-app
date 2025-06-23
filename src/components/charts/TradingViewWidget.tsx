@@ -1,4 +1,3 @@
-// src/components/charts/TradingViewWidget.tsx
 'use client'
 
 import React, { useEffect, useRef } from 'react'

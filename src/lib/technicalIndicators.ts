@@ -1,9 +1,3 @@
-// src/lib/technicalIndicators.ts
-// Minimal technical indicators library - keeping only functions used by other APIs
-
-/**
- * Calculate correlation between two price series
- */
 export function calculateCorrelation(prices1: number[], prices2: number[]): number {
   if (prices1.length !== prices2.length) {
     throw new Error('Price arrays must have the same length')

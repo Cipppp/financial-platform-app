@@ -192,7 +192,6 @@ async function createTable(tableDefinition: any) {
     console.log(`✅ Table ${tableDefinition.TableName} already exists`)
   } catch (error: any) {
     if (error.name === 'ResourceNotFoundException') {
-      // Table doesn't exist, create it
       try {
         console.log(`🚀 Creating table: ${tableDefinition.TableName}...`)
         await dynamoClient.send(new CreateTableCommand(tableDefinition))

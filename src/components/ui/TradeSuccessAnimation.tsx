@@ -36,7 +36,6 @@ export default function TradeSuccessAnimation({
 
   const isBuy = tradeDetails.type === 'BUY'
 
-  // Don't render if not visible or if we're on the server
   if (!isVisible || typeof window === 'undefined') {
     return null
   }

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
 import { UserRepository } from '@/lib/dynamodb/repositories/UserRepository'
 import { PortfolioRepository } from '@/lib/dynamodb/repositories/PortfolioRepository'
 

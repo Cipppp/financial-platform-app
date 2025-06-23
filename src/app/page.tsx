@@ -7,13 +7,10 @@ import { useRouter } from 'next/navigation'
 import { 
   TrendingUp, 
   BarChart3, 
-  PieChart, 
-  DollarSign, 
+  DollarSign,
   Activity, 
   Shield,
   ArrowRight,
-  Target,
-  Globe
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -47,13 +44,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-gray-200">
         <div className="relative container mx-auto px-4 py-20">
           <div className="text-center max-w-5xl mx-auto">
             <div className="inline-flex items-center bg-gray-100 rounded-full px-6 py-2 mb-8 border border-gray-300">
               <Activity className="h-4 w-4 mr-2 text-black" />
-              <span className="text-sm font-medium text-gray-700">Professional Trading Platform</span>
+              <span className="text-sm font-medium text-gray-700">Trading Platform</span>
             </div>
             
             <h1 className="text-6xl md:text-7xl font-bold mb-6 text-black leading-tight">
@@ -92,10 +88,6 @@ export default function HomePage() {
               <div className="text-center border-r border-gray-200 last:border-r-0">
                 <div className="text-3xl font-bold text-black">Real-time</div>
                 <div className="text-sm text-gray-500">Market Data</div>
-              </div>
-              <div className="text-center border-r border-gray-200 last:border-r-0">
-                <div className="text-3xl font-bold text-black">Zero</div>
-                <div className="text-sm text-gray-500">Financial Risk</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-black">24/7</div>
@@ -177,14 +169,6 @@ export default function HomePage() {
                     <span className="font-medium text-gray-600">Market Data</span>
                     <span className="text-black font-bold">Real-time</span>
                   </div>
-                  <div className="flex justify-between items-center py-3 border-b border-gray-200">
-                    <span className="font-medium text-gray-600">Analytics Suite</span>
-                    <span className="text-black font-bold">Professional</span>
-                  </div>
-                  <div className="flex justify-between items-center py-3">
-                    <span className="font-medium text-gray-600">Financial Risk</span>
-                    <span className="text-black font-bold">$0</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -197,9 +181,6 @@ export default function HomePage() {
       <div className="py-20 bg-black text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Begin Trading</h2>
-          <p className="text-xl mb-10 max-w-2xl mx-auto text-gray-300">
-            Access professional trading infrastructure
-          </p>
           <Link 
             href="/auth/signup"
             className="inline-flex items-center px-12 py-6 bg-white text-black font-bold text-xl hover:bg-gray-200 transition-all duration-300 border border-white"

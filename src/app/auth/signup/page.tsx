@@ -8,15 +8,12 @@ import {
   EyeOff, 
   Mail, 
   Lock, 
-  TrendingUp, 
   ArrowLeft,
   User,
   DollarSign,
   Loader2,
   CheckCircle,
-  Star,
   Zap,
-  Gift,
   Shield
 } from 'lucide-react'
 

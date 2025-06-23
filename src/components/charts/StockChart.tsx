@@ -1,4 +1,3 @@
-// src/components/charts/StockChart.tsx
 'use client'
 
 import { useEffect, useRef } from 'react'

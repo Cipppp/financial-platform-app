@@ -228,21 +228,64 @@ export default function ResearchPage() {
 
 
   const generatePrediction = async () => {
-    const params = {
-      symbol: selectedSymbol,
-      timeframe: '30d',
-      model: 'ensemble'
-    }
-
-    const response = await fetch('/api/analysis/prediction', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params)
-    })
-
-    if (response.ok) {
-      await loadPredictionsData()
-    }
+    setLoading(true)
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // Generate dummy prediction data simulating AWS Bedrock analysis
+    const currentDate = new Date()
+    const targetDate = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+    
+    // Simulate getting current price (you'd normally get this from your API)
+    const basePrice = 150 + Math.random() * 100 // Random base price for demo
+    
+    // Generate realistic prediction variations
+    const predictions = [
+      {
+        id: `pred_${Date.now()}_1`,
+        symbol: selectedSymbol,
+        model: 'Claude-3.5-Sonnet',
+        timeframe: '30d',
+        currentPrice: basePrice,
+        predictedPrice: basePrice * (1 + (Math.random() - 0.5) * 0.2), // ±10% variation
+        priceChangePercent: (Math.random() - 0.5) * 0.2, // ±10% change
+        confidence: 0.72 + Math.random() * 0.2, // 72-92% confidence
+        targetDate: targetDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        accuracy: null,
+        analysis: {
+          technicalSignals: ['Moving average crossover', 'RSI oversold condition'],
+          sentimentFactors: ['Positive earnings outlook', 'Sector momentum'],
+          marketConditions: 'Neutral to bullish trend'
+        }
+      },
+      {
+        id: `pred_${Date.now()}_2`,
+        symbol: selectedSymbol,
+        model: 'Ensemble-LSTM',
+        timeframe: '30d',
+        currentPrice: basePrice,
+        predictedPrice: basePrice * (1 + (Math.random() - 0.5) * 0.15), // ±7.5% variation
+        priceChangePercent: (Math.random() - 0.5) * 0.15,
+        confidence: 0.65 + Math.random() * 0.25, // 65-90% confidence
+        targetDate: targetDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        accuracy: null,
+        analysis: {
+          technicalSignals: ['Volume spike pattern', 'Support level hold'],
+          sentimentFactors: ['Institutional buying', 'Analyst upgrades'],
+          marketConditions: 'Consolidation phase'
+        }
+      }
+    ]
+    
+    // Add the new predictions to the existing ones
+    setPredictions(prev => [...predictions, ...prev.slice(0, 3)]) // Keep max 5 predictions
+    setLoading(false)
+    
+    // Show success message (optional)
+    console.log(`Generated AI predictions for ${selectedSymbol} using simulated AWS Bedrock`)
   }
 
   if (status === 'loading') {
@@ -485,9 +528,20 @@ export default function ResearchPage() {
                     </div>
                     <button
                       onClick={generatePrediction}
-                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm lg:text-base"
+                      disabled={loading}
+                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm lg:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                     >
-                      Generate Prediction
+                      {loading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          <span>Generating AI Prediction...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>🤖</span>
+                          <span>Generate Prediction</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </CardHeader>
@@ -495,10 +549,15 @@ export default function ResearchPage() {
                   {predictions.length > 0 ? (
                     <div className="space-y-4">
                       {predictions.map((prediction, index) => (
-                        <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div key={prediction.id || index} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
                           <div className="flex justify-between items-start mb-3">
                             <div>
-                              <h3 className="font-bold text-black">{prediction.symbol}</h3>
+                              <h3 className="font-bold text-black flex items-center">
+                                {prediction.symbol}
+                                <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                                  AI Generated
+                                </span>
+                              </h3>
                               <p className="text-sm text-gray-600">
                                 Model: {prediction.model} | Timeframe: {prediction.timeframe}
                               </p>
@@ -516,18 +575,58 @@ export default function ResearchPage() {
                             </div>
                           </div>
                           
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Confidence: {(prediction.confidence * 100).toFixed(0)}%
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Target: {new Date(prediction.targetDate).toLocaleDateString()}
-                            </span>
+                          <div className="grid grid-cols-2 gap-4 mb-3">
+                            <div>
+                              <span className="text-sm text-gray-600">Confidence:</span>
+                              <div className="flex items-center mt-1">
+                                <div className="w-full bg-gray-200 rounded-full h-2 mr-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full" 
+                                    style={{ width: `${prediction.confidence * 100}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm font-medium">{(prediction.confidence * 100).toFixed(0)}%</span>
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Target Date:</span>
+                              <div className="text-sm font-medium text-black mt-1">
+                                {new Date(prediction.targetDate).toLocaleDateString()}
+                              </div>
+                            </div>
                           </div>
+
+                          {prediction.analysis && (
+                            <div className="mt-3 p-3 bg-white/70 rounded-lg">
+                              <h4 className="text-sm font-semibold text-gray-800 mb-2">AI Analysis Summary:</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                                <div>
+                                  <span className="font-medium text-blue-700">Technical Signals:</span>
+                                  <ul className="text-gray-600 mt-1 space-y-1">
+                                    {prediction.analysis.technicalSignals?.map((signal, i) => (
+                                      <li key={i}>• {signal}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-green-700">Sentiment Factors:</span>
+                                  <ul className="text-gray-600 mt-1 space-y-1">
+                                    {prediction.analysis.sentimentFactors?.map((factor, i) => (
+                                      <li key={i}>• {factor}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-purple-700">Market Conditions:</span>
+                                  <p className="text-gray-600 mt-1">{prediction.analysis.marketConditions}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           
                           {prediction.accuracy !== null && (
                             <div className="mt-2 text-xs">
-                              <span className="text-gray-600">Accuracy: </span>
+                              <span className="text-gray-600">Historical Accuracy: </span>
                               <span className={`font-medium ${
                                 prediction.accuracy > 0.8 ? 'text-green-600' : 
                                 prediction.accuracy > 0.6 ? 'text-yellow-600' : 'text-red-600'
@@ -536,6 +635,10 @@ export default function ResearchPage() {
                               </span>
                             </div>
                           )}
+                          
+                          <div className="mt-3 text-xs text-gray-500 border-t pt-2">
+                            🤖 Generated by simulated AWS Bedrock Claude-3.5-Sonnet at {new Date(prediction.createdAt).toLocaleString()}
+                          </div>
                         </div>
                       ))}
                     </div>

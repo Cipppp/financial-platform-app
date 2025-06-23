@@ -38,7 +38,6 @@ export const config = {
     holdings: process.env.DYNAMODB_HOLDINGS_TABLE!,
     trades: process.env.DYNAMODB_TRADES_TABLE!,
     marketData: process.env.DYNAMODB_MARKET_DATA_TABLE!,
-    technicalIndicators: process.env.DYNAMODB_TECHNICAL_INDICATORS_TABLE!,
     predictions: process.env.DYNAMODB_PREDICTIONS_TABLE!,
     sentimentData: process.env.DYNAMODB_SENTIMENT_DATA_TABLE!,
     correlations: process.env.DYNAMODB_CORRELATIONS_TABLE!,

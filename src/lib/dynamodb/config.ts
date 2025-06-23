@@ -6,7 +6,6 @@ export const TABLES = {
   HOLDINGS: config.tables.holdings,
   TRADES: config.tables.trades,
   MARKET_DATA: config.tables.marketData,
-  TECHNICAL_INDICATORS: config.tables.technicalIndicators,
   PREDICTIONS: config.tables.predictions,
   SENTIMENT_DATA: config.tables.sentimentData,
   CORRELATIONS: config.tables.correlations,

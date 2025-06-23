@@ -12,7 +12,6 @@ const TABLES = {
   HOLDINGS: config.tables.holdings,
   TRADES: config.tables.trades,
   MARKET_DATA: config.tables.marketData,
-  TECHNICAL_INDICATORS: config.tables.technicalIndicators,
   PREDICTIONS: config.tables.predictions,
   SENTIMENT_DATA: config.tables.sentimentData,
   CORRELATIONS: config.tables.correlations,
@@ -103,18 +102,6 @@ const tableDefinitions = [
     ],
     BillingMode: 'PROVISIONED',
     ProvisionedThroughput: { ReadCapacityUnits: 10, WriteCapacityUnits: 10 }
-  },
-  {
-    TableName: TABLES.TECHNICAL_INDICATORS,
-    KeySchema: [
-      { AttributeName: 'symbol', KeyType: 'HASH' },
-      { AttributeName: 'timestamp', KeyType: 'RANGE' }
-    ],
-    AttributeDefinitions: [
-      { AttributeName: 'symbol', AttributeType: 'S' },
-      { AttributeName: 'timestamp', AttributeType: 'S' }
-    ],
-    BillingMode: 'PAY_PER_REQUEST'
   },
   {
     TableName: TABLES.PREDICTIONS,

@@ -413,7 +413,7 @@ export default function ResearchPage() {
                           {sentimentData.overview.sentimentLabel}
                         </div>
                         <div className="text-lg text-gray-600">
-                          Score: {sentimentData.overview.overallSentiment.toFixed(3)}
+                          Score: {sentimentData.overview.overallSentiment ? sentimentData.overview.overallSentiment.toFixed(3) : 'N/A'}
                         </div>
                       </div>
                     
@@ -462,10 +462,10 @@ export default function ResearchPage() {
                             {day.headlineCount} headlines
                           </span>
                           <span className={`font-medium ${
-                            day.sentiment > 0.1 ? 'text-green-600' :
-                            day.sentiment < -0.1 ? 'text-red-600' : 'text-gray-900'
+                            (day.sentiment || 0) > 0.1 ? 'text-green-600' :
+                            (day.sentiment || 0) < -0.1 ? 'text-red-600' : 'text-gray-900'
                           }`}>
-                            {day.sentiment.toFixed(2)}
+                            {day.sentiment ? day.sentiment.toFixed(2) : '0.00'}
                           </span>
                         </div>
                       </div>
@@ -499,7 +499,7 @@ export default function ResearchPage() {
                         indicator.current.change > 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {indicator.current.change > 0 ? '+' : ''}{indicator.current.change} 
-                        ({indicator.current.changePercent > 0 ? '+' : ''}{indicator.current.changePercent.toFixed(1)}%)
+                        ({(indicator.current.changePercent || 0) > 0 ? '+' : ''}{indicator.current.changePercent ? indicator.current.changePercent.toFixed(1) : '0.0'}%)
                       </div>
                       <div className="text-xs text-gray-500">
                         Category: {indicator.category}
@@ -644,10 +644,10 @@ export default function ResearchPage() {
                             <div className="mt-2 text-xs">
                               <span className="text-gray-600">Historical Accuracy: </span>
                               <span className={`font-medium ${
-                                prediction.accuracy > 0.8 ? 'text-green-600' : 
-                                prediction.accuracy > 0.6 ? 'text-yellow-600' : 'text-red-600'
+                                (prediction.accuracy || 0) > 0.8 ? 'text-green-600' : 
+                                (prediction.accuracy || 0) > 0.6 ? 'text-yellow-600' : 'text-red-600'
                               }`}>
-                                {(prediction.accuracy * 100).toFixed(1)}%
+                                {prediction.accuracy ? (prediction.accuracy * 100).toFixed(1) : '0.0'}%
                               </span>
                             </div>
                           )}

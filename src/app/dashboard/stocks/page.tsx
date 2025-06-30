@@ -165,7 +165,6 @@ export default function StocksPage() {
           </div>
           
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5 z-10" />
             <input
               type="text"
               placeholder="Enter symbol or company name"

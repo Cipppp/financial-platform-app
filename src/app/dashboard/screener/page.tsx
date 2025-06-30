@@ -190,7 +190,6 @@ export default function StockScreenerPage() {
             
             {/* Search Bar */}
             <div className="relative max-w-md">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by symbol or company name..."

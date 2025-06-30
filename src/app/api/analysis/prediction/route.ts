@@ -1,7 +1,7 @@
 // src/app/api/analysis/prediction/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePrediction, PredictionInput } from '@/lib/predictionModels'
-import { generateAIPrediction, generateMarketSentiment } from '@/lib/bedrock-client'
+import { generateAIPrediction, generateDirectPrediction, generateMarketSentiment } from '@/lib/bedrock-client'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { PredictionRepository } from '@/lib/dynamodb/repositories/PredictionRepository'
@@ -161,15 +161,43 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error) {
-        console.error('AI prediction failed, falling back to local model:', error)
-        // Fall back to local prediction model
-        const predictionInput: PredictionInput & { sentiment: number } = {
-          prices: historicalData.prices,
-          timestamps: historicalData.timestamps,
-          volume: historicalData.volume,
-          sentiment
+        console.error('AI agent prediction failed, trying direct model:', error)
+        
+        try {
+          // Try direct model invocation as fallback
+          const directPrediction = await generateDirectPrediction({
+            symbol,
+            currentPrice: historicalData.prices[historicalData.prices.length - 1],
+            historicalPrices: historicalData.prices,
+            volume: historicalData.volume,
+            sentiment,
+            timeframe,
+            marketContext: `${sentimentData.label} sentiment`
+          })
+          
+          prediction = {
+            predictedPrice: directPrediction.predictedPrice,
+            confidence: directPrediction.confidence,
+            model: 'Claude-3-Haiku-Direct',
+            reasoning: directPrediction.reasoning,
+            parameters: {
+              technicalFactors: directPrediction.technicalFactors,
+              riskFactors: directPrediction.riskFactors,
+              marketOutlook: directPrediction.marketOutlook,
+              sentimentFactors: sentimentData.factors
+            }
+          }
+        } catch (directError) {
+          console.error('Direct model also failed, falling back to local model:', directError)
+          // Fall back to local prediction model
+          const predictionInput: PredictionInput & { sentiment: number } = {
+            prices: historicalData.prices,
+            timestamps: historicalData.timestamps,
+            volume: historicalData.volume,
+            sentiment
+          }
+          prediction = generatePrediction(predictionInput, model as any, daysAhead)
         }
-        prediction = generatePrediction(predictionInput, model as any, daysAhead)
       }
     } else {
       // Use local prediction model

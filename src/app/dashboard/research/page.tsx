@@ -347,12 +347,12 @@ export default function ResearchPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-medium text-gray-900">
-                          ${stock.price?.toFixed(2)}
+                          ${stock.price ? stock.price.toFixed(2) : 'N/A'}
                         </div>
                         <div className={`text-xs ${
-                          stock.changePercent > 0 ? 'text-green-600' : 'text-red-600'
+                          (stock.changePercent || 0) > 0 ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {stock.changePercent > 0 ? '+' : ''}{stock.changePercent?.toFixed(2)}%
+                          {(stock.changePercent || 0) > 0 ? '+' : ''}{stock.changePercent ? stock.changePercent.toFixed(2) : '0.00'}%
                         </div>
                       </div>
                     </button>

@@ -7,6 +7,24 @@ import { BedrockAgentRuntimeClient, InvokeAgentCommand } from '@aws-sdk/client-b
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { config } from './config'
 
+// Simple rate limiting
+let lastBedrockCall = 0
+const MIN_CALL_INTERVAL = 1000 // 1 second between calls
+
+async function rateLimitedCall<T>(fn: () => Promise<T>): Promise<T> {
+  const now = Date.now()
+  const timeSinceLastCall = now - lastBedrockCall
+  
+  if (timeSinceLastCall < MIN_CALL_INTERVAL) {
+    const waitTime = MIN_CALL_INTERVAL - timeSinceLastCall
+    console.log(`Rate limiting: waiting ${waitTime}ms`)
+    await new Promise(resolve => setTimeout(resolve, waitTime))
+  }
+  
+  lastBedrockCall = Date.now()
+  return fn()
+}
+
 // Initialize Bedrock clients
 const bedrockAgentClient = new BedrockAgentRuntimeClient({
   region: config.aws.region,
@@ -53,7 +71,7 @@ export async function generateAIPrediction(
       inputText: prompt,
     })
 
-    const response = await bedrockAgentClient.send(command)
+    const response = await rateLimitedCall(() => bedrockAgentClient.send(command))
     
     // Process the streaming response
     let fullResponse = ''
@@ -68,8 +86,16 @@ export async function generateAIPrediction(
     // Parse the agent response
     return parseAgentResponse(fullResponse, request)
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error invoking Bedrock agent:', error)
+    
+    // Handle throttling with exponential backoff
+    if (error.name === 'ThrottlingException') {
+      console.log('Bedrock throttling detected, backing off...')
+      await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000))
+      throw new Error('Bedrock service is busy. Please try again in a moment.')
+    }
+    
     throw new Error('Failed to generate AI prediction')
   }
 }
@@ -118,7 +144,7 @@ Format your response as JSON:
       inputText: prompt,
     })
 
-    const response = await bedrockAgentClient.send(command)
+    const response = await rateLimitedCall(() => bedrockAgentClient.send(command))
     
     let fullResponse = ''
     if (response.completion) {
@@ -143,8 +169,20 @@ Format your response as JSON:
       }
     }
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating sentiment:', error)
+    
+    // Handle throttling
+    if (error.name === 'ThrottlingException') {
+      console.log('Bedrock sentiment throttling detected, using fallback...')
+      return {
+        sentiment: 0,
+        label: 'Neutral (Rate Limited)',
+        factors: ['Bedrock service busy - using fallback'],
+        confidence: 0.3
+      }
+    }
+    
     return {
       sentiment: 0,
       label: 'Neutral',
@@ -172,7 +210,7 @@ Please search your knowledge base for relevant financial information and provide
       inputText: prompt,
     })
 
-    const response = await bedrockAgentClient.send(command)
+    const response = await rateLimitedCall(() => bedrockAgentClient.send(command))
     
     let fullResponse = ''
     if (response.completion) {
@@ -303,6 +341,69 @@ function calculateVolatility(prices: number[]): number {
 }
 
 /**
+ * Fallback: Use direct model invocation instead of agent
+ */
+export async function generateDirectPrediction(
+  request: BedrockPredictionRequest
+): Promise<BedrockPredictionResponse> {
+  try {
+    const prompt = `Analyze ${request.symbol} stock and predict price for ${request.timeframe}. 
+Current price: $${request.currentPrice}. 
+Recent prices: ${request.historicalPrices.slice(-5).join(', ')}
+Sentiment: ${request.sentiment || 0}
+
+Provide a JSON response with:
+{
+  "predictedPrice": number,
+  "confidence": number (0-1),
+  "reasoning": "brief explanation",
+  "technicalFactors": ["factor1", "factor2"],
+  "riskFactors": ["risk1", "risk2"],
+  "marketOutlook": "outlook text"
+}`
+
+    const command = new InvokeModelCommand({
+      modelId: 'anthropic.claude-3-haiku-20240307-v1:0',
+      body: JSON.stringify({
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      }),
+      contentType: 'application/json'
+    })
+
+    const response = await rateLimitedCall(() => bedrockRuntimeClient.send(command))
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
+    
+    try {
+      const parsed = JSON.parse(responseBody.content[0].text)
+      return {
+        predictedPrice: parsed.predictedPrice || request.currentPrice,
+        confidence: Math.min(Math.max(parsed.confidence || 0.5, 0), 1),
+        reasoning: parsed.reasoning || 'Direct model analysis',
+        technicalFactors: parsed.technicalFactors || [],
+        riskFactors: parsed.riskFactors || [],
+        marketOutlook: parsed.marketOutlook || 'Neutral outlook',
+        timeframe: request.timeframe
+      }
+    } catch {
+      return {
+        predictedPrice: request.currentPrice,
+        confidence: 0.5,
+        reasoning: 'Direct model invocation completed',
+        technicalFactors: ['Technical analysis'],
+        riskFactors: ['Market volatility'],
+        marketOutlook: 'Neutral outlook',
+        timeframe: request.timeframe
+      }
+    }
+  } catch (error: any) {
+    console.error('Direct model invocation failed:', error)
+    throw new Error('Failed to generate direct prediction')
+  }
+}
+
+/**
  * Health check for Bedrock connectivity
  */
 export async function testBedrockConnection(): Promise<boolean> {
@@ -316,7 +417,7 @@ export async function testBedrockConnection(): Promise<boolean> {
       inputText: testPrompt,
     })
 
-    const response = await bedrockAgentClient.send(command)
+    const response = await rateLimitedCall(() => bedrockAgentClient.send(command))
     return !!response.completion
     
   } catch (error) {

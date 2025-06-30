@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { SentimentRepository } from '@/lib/dynamodb/repositories/SentimentRepository'
+import { generateMarketSentiment } from '@/lib/bedrock-client'
 
 const sentimentRepo = new SentimentRepository()
 
@@ -116,6 +117,65 @@ function getCompanyName(symbol: string): string {
 }
 
 async function fetchRealSentiment(symbol: string): Promise<any[]> {
+  try {
+    // Try to use Bedrock for sentiment analysis
+    const useBedrock = process.env.USE_BEDROCK_SENTIMENT !== 'false'
+    
+    if (useBedrock) {
+      console.log(`Generating AI sentiment analysis for ${symbol}`)
+      
+      // Get relevant headlines for the symbol
+      const relevantHeadlines = MOCK_NEWS_HEADLINES.filter(headline => 
+        headline.toLowerCase().includes(symbol.toLowerCase()) ||
+        headline.toLowerCase().includes(getCompanyName(symbol).toLowerCase())
+      )
+      
+      // Use more general headlines if no specific ones found
+      const headlinesToAnalyze = relevantHeadlines.length > 0 
+        ? relevantHeadlines 
+        : MOCK_NEWS_HEADLINES.slice(0, 5)
+      
+      // Generate AI sentiment
+      const aiSentiment = await generateMarketSentiment(symbol, headlinesToAnalyze)
+      
+      // Create sentiment data entries based on AI analysis
+      const sentimentData = []
+      const now = new Date()
+      
+      // Generate sentiment data for the last 30 days with AI influence
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(now)
+        date.setDate(date.getDate() - i)
+        
+        // Generate 1-3 headlines per day
+        const headlineCount = Math.floor(Math.random() * 3) + 1
+        
+        for (let j = 0; j < headlineCount; j++) {
+          const headline = headlinesToAnalyze[Math.floor(Math.random() * headlinesToAnalyze.length)]
+          
+          // Use AI sentiment as base with some variation
+          const baseAiSentiment = aiSentiment.sentiment
+          const dailyVariation = (Math.random() - 0.5) * 0.3 // ±0.15 variation
+          const finalSentiment = Math.max(-1, Math.min(1, baseAiSentiment + dailyVariation))
+          
+          sentimentData.push({
+            timestamp: date,
+            headline: headline.replace(/Apple|Tesla|Microsoft|Amazon|Google|Meta|NVIDIA/i, getCompanyName(symbol)),
+            sentiment: parseFloat(finalSentiment.toFixed(3)),
+            source: 'AI Analysis',
+            symbol: symbol,
+            aiFactors: aiSentiment.factors
+          })
+        }
+      }
+      
+      return sentimentData
+    }
+  } catch (error) {
+    console.error('Bedrock sentiment analysis failed, falling back to mock data:', error)
+  }
+  
+  // Fall back to mock data if Bedrock fails or is disabled
   return generateMockSentimentData(symbol)
 }
 

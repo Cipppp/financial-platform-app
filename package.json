@@ -10,6 +10,8 @@
     "setup-db": "npx ts-node --project scripts/tsconfig.json scripts/setup-dynamodb-tables.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.830.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.830.0",
     "@aws-sdk/client-dynamodb": "^3.830.0",
     "@aws-sdk/lib-dynamodb": "^3.830.0",
     "@headlessui/react": "^2.2.4",

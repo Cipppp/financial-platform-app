@@ -1,6 +1,7 @@
 // src/app/api/analysis/prediction/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { generatePrediction, PredictionInput } from '@/lib/predictionModels'
+import { generateAIPrediction, generateMarketSentiment } from '@/lib/bedrock-client'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { PredictionRepository } from '@/lib/dynamodb/repositories/PredictionRepository'
@@ -126,19 +127,60 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Get sentiment data (mock for now)
-    const sentiment = await getSentimentScore(symbol)
+    // Get sentiment data using Bedrock
+    const sentimentData = await generateMarketSentiment(symbol)
+    const sentiment = sentimentData.sentiment
     
-    // Prepare prediction input
-    const predictionInput: PredictionInput & { sentiment: number } = {
-      prices: historicalData.prices,
-      timestamps: historicalData.timestamps,
-      volume: historicalData.volume,
-      sentiment
+    // Use AI prediction if enabled, otherwise fall back to local models
+    let prediction
+    const useAI = process.env.USE_BEDROCK_PREDICTIONS !== 'false'
+    
+    if (useAI) {
+      try {
+        // Generate AI prediction using Bedrock
+        const aiPrediction = await generateAIPrediction({
+          symbol,
+          currentPrice: historicalData.prices[historicalData.prices.length - 1],
+          historicalPrices: historicalData.prices,
+          volume: historicalData.volume,
+          sentiment,
+          timeframe,
+          marketContext: `${sentimentData.label} sentiment (${sentimentData.factors.join(', ')})`
+        })
+        
+        prediction = {
+          predictedPrice: aiPrediction.predictedPrice,
+          confidence: aiPrediction.confidence,
+          model: 'Claude-3-Haiku',
+          reasoning: aiPrediction.reasoning,
+          parameters: {
+            technicalFactors: aiPrediction.technicalFactors,
+            riskFactors: aiPrediction.riskFactors,
+            marketOutlook: aiPrediction.marketOutlook,
+            sentimentFactors: sentimentData.factors
+          }
+        }
+      } catch (error) {
+        console.error('AI prediction failed, falling back to local model:', error)
+        // Fall back to local prediction model
+        const predictionInput: PredictionInput & { sentiment: number } = {
+          prices: historicalData.prices,
+          timestamps: historicalData.timestamps,
+          volume: historicalData.volume,
+          sentiment
+        }
+        prediction = generatePrediction(predictionInput, model as any, daysAhead)
+      }
+    } else {
+      // Use local prediction model
+      const predictionInput: PredictionInput & { sentiment: number } = {
+        prices: historicalData.prices,
+        timestamps: historicalData.timestamps,
+        volume: historicalData.volume,
+        sentiment
+      }
+      prediction = generatePrediction(predictionInput, model as any, daysAhead)
     }
-    
-    // Generate prediction
-    const prediction = generatePrediction(predictionInput, model as any, daysAhead)
     
     // Save prediction to database
     const user = await userRepo.findByEmail(session.user.email)

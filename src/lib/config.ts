@@ -9,6 +9,14 @@ export const config = {
     region: process.env.AWS_REGION!,
   },
 
+  // AWS Bedrock Configuration
+  bedrock: {
+    agentId: process.env.BEDROCK_AGENT_ID!,
+    agentAliasId: process.env.BEDROCK_AGENT_ALIAS_ID!,
+    knowledgeBaseId: process.env.BEDROCK_KNOWLEDGE_BASE_ID!,
+    model: process.env.BEDROCK_MODEL || 'anthropic.claude-3-haiku-20240307-v1:0',
+  },
+
   // API Configuration
   api: {
     baseUrl: process.env.NEXT_PUBLIC_API_URL!,
@@ -51,6 +59,9 @@ export const config = {
 export function validateConfig() {
   const requiredEnvVars = [
     'AWS_REGION',
+    'BEDROCK_AGENT_ID',
+    'BEDROCK_AGENT_ALIAS_ID', 
+    'BEDROCK_KNOWLEDGE_BASE_ID',
     'NEXT_PUBLIC_API_URL',
     'TIINGO_BASE_URL',
     'TIINGO_API_KEY',

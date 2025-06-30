@@ -64,7 +64,7 @@ export class PredictionRepository {
   async findBySymbol(symbol: string, limit: number = 10): Promise<Prediction[]> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.PREDICTIONS,
-      IndexName: 'SymbolCreatedAtIndex',
+      IndexName: 'symbol-createdAt-index',
       KeyConditionExpression: 'symbol = :symbol',
       ExpressionAttributeValues: {
         ':symbol': symbol.toUpperCase()

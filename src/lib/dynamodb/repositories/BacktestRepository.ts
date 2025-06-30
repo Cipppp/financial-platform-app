@@ -93,7 +93,7 @@ export class BacktestRepository {
   async findBySymbol(symbol: string, limit: number = 10): Promise<BacktestResult[]> {
     const result = await docClient.send(new QueryCommand({
       TableName: TABLES.BACKTEST_RESULTS,
-      IndexName: 'SymbolCreatedAtIndex',
+      IndexName: 'symbol-createdAt-index',
       KeyConditionExpression: 'symbol = :symbol',
       ExpressionAttributeValues: {
         ':symbol': symbol.toUpperCase()
